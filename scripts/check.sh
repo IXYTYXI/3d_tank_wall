@@ -21,4 +21,7 @@ run_check import --editor --import
 run_check combat --script tests/run.gd
 run_check presentation --script tests/presentation.gd
 run_check integration --script tests/integration.gd
+run_check battle-rules --script tests/battle_rules.gd
+run_check battle-integration --script tests/battle_integration.gd
+run_check enemy-simulation --fixed-fps 60 --script tests/enemy_simulation.gd
 run_check startup --quit-after 90

@@ -1,7 +1,17 @@
 extends CharacterBody3D
 
 const Visual = preload("res://scripts/tank_visual.gd")
+const EnemyVisual = preload("res://scripts/enemy_visual.gd")
 const Combat = preload("res://scripts/combat_math.gd")
+signal eliminated(actor: CharacterBody3D)
+signal damaged(amount: int)
+
+var faction := 0
+var variant := "标准坦克"
+var max_health := 140
+var health := 140
+var max_forward_speed := 13.5
+var dead := false
 var model: Node3D
 var speed := 0.0
 var throttle := 0.0
@@ -12,7 +22,7 @@ var spawn_point := Vector3.ZERO
 
 func _ready() -> void:
 	collision_layer = 2
-	collision_mask = 1
+	collision_mask = 7
 	floor_snap_length = 0.85
 	floor_max_angle = deg_to_rad(43)
 	var shape := CollisionShape3D.new()
@@ -21,11 +31,21 @@ func _ready() -> void:
 	shape.shape = box
 	shape.position.y = 0.95
 	add_child(shape)
-	model = Visual.new()
+	var turret_shape := CollisionShape3D.new()
+	var turret_volume := CylinderShape3D.new()
+	turret_volume.radius = 1.16
+	turret_volume.height = 0.88
+	turret_shape.shape = turret_volume
+	turret_shape.position = Vector3(0,1.96,-0.25)
+	add_child(turret_shape)
+	health = max_health
+	model = Visual.new() if faction == 0 else EnemyVisual.new()
+	if faction != 0:
+		model.variant = variant
 	add_child(model)
 
 func _physics_process(dt: float) -> void:
-	var target_speed := throttle * (13.5 if throttle > 0 else 6.0)
+	var target_speed := throttle * (max_forward_speed if throttle > 0 else 6.0)
 	speed = move_toward(speed, target_speed, (18.0 if brake else 4.0 if throttle else 5.0) * dt)
 	if brake:
 		speed = move_toward(speed, 0, 18 * dt)
@@ -59,3 +79,25 @@ func reset() -> void:
 	model.basis = Basis.IDENTITY
 	model.turret.rotation = Vector3.ZERO
 	model.barrel.rotation = Vector3.ZERO
+
+func take_damage(raw: float, direction: Vector3) -> int:
+	if dead:
+		return 0
+	var amount := Combat.armor_damage(raw,direction,global_basis)
+	health = maxi(0,health-amount)
+	damaged.emit(amount)
+	if health == 0:
+		dead = true
+		speed = 0
+		velocity = Vector3.ZERO
+		set_physics_process(false)
+		collision_layer = 0
+		eliminated.emit(self)
+	return amount
+
+func repair(amount: int) -> int:
+	if dead:
+		return 0
+	var restored := mini(amount,max_health-health)
+	health += maxi(0,restored)
+	return maxi(0,restored)

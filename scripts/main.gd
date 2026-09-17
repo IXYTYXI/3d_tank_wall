@@ -5,6 +5,7 @@ const Tank = preload("res://scripts/tank.gd")
 const Visual = preload("res://scripts/tank_visual.gd")
 const Combat = preload("res://scripts/combat_math.gd")
 const Effects = preload("res://scripts/battle_effects.gd")
+const Battle = preload("res://scripts/battle_director.gd")
 const Hud = preload("res://scripts/hud.gd")
 var field: Node3D
 var tank: CharacterBody3D
@@ -32,6 +33,7 @@ var shots := 0
 var hits := 0
 var message := "训练场 / 共 6 个靶标"
 var audio: AudioStreamPlayer
+var battle: Node3D
 
 func _ready() -> void:
 	setup_environment()
@@ -60,6 +62,9 @@ func _ready() -> void:
 	camera.far = 550
 	arm.add_child(camera)
 	camera.current = true
+	battle = Battle.new()
+	battle.game = self
+	add_child(battle)
 	var layer := CanvasLayer.new()
 	add_child(layer)
 	hud = Hud.new()
@@ -105,11 +110,16 @@ func setup_environment() -> void:
 	add_child(fill)
 
 func set_playing(value: bool) -> void:
+	if value and is_instance_valid(battle) and (battle.finished() or battle.phase == "upgrade"):
+		return
 	playing = value
 	if value:
 		started = true
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if value else Input.MOUSE_MODE_VISIBLE
-	tank.set_physics_process(value)
+	tank.set_physics_process(value and not tank.dead)
+	if is_instance_valid(battle):
+		for enemy in battle.enemies:
+			enemy.set_physics_process(value and not enemy.dead)
 	tank.throttle = 0
 	tank.steering = 0
 	scoped = false
@@ -124,7 +134,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.physical_keycode == KEY_ESCAPE:
 			set_playing(not playing)
-		elif event.physical_keycode == KEY_R and playing:
+		elif event.physical_keycode == KEY_E and playing:
+			battle.use_repair()
+		elif event.physical_keycode == KEY_R and started:
 			get_tree().reload_current_scene()
 	if not playing:
 		return
@@ -138,8 +150,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			zoom = clampf(zoom + 0.7, 5.5, 16)
 
-func ray(from: Vector3, to: Vector3) -> Dictionary:
-	var query := PhysicsRayQueryParameters3D.create(from, to, 1)
+func ray(from: Vector3, to: Vector3, exclude: Array[RID] = []) -> Dictionary:
+	var query := PhysicsRayQueryParameters3D.create(from, to, 7)
+	query.exclude = exclude if not exclude.is_empty() else [tank.get_rid()]
 	return get_world_3d().direct_space_state.intersect_ray(query)
 
 func _physics_process(dt: float) -> void:
@@ -188,36 +201,52 @@ func _physics_process(dt: float) -> void:
 	update_shells(dt)
 	fx.drive(tank.model, tank.speed, tank.steering, dt)
 	fx.tick(dt)
+	battle.tick(dt)
 	hud.queue_redraw()
 
+func start_defense() -> void:
+	if battle.finished():
+		get_tree().reload_current_scene()
+		return
+	if not started:
+		battle.start()
+	set_playing(true)
+
 func fire() -> void:
-	if cooldown > 0:
+	if cooldown > 0 or tank.dead or battle.finished():
 		return
-	cooldown = reload_time
+	cooldown = reload_time*(0.65 if battle.fast_reload_time>0 else 1.0)
 	shots += 1
-	var muzzle: Vector3 = tank.model.muzzle.global_position
-	var direction: Vector3 = -tank.model.muzzle.global_basis.z
-	var obstruction := ray(tank.model.barrel.global_position, muzzle)
 	play_boom()
-	fx.fire(muzzle, direction)
-	tank.model.kick_recoil()
 	shot_kick = 0.014 if scoped else 0.025
-	if not obstruction.is_empty():
-		impact(obstruction)
+	fire_actor(tank,48.0)
+
+func fire_actor(actor: CharacterBody3D, damage: float) -> void:
+	if actor.dead:
 		return
-	var mesh := Visual.box(self, Vector3(0.065, 0.065, 0.9), muzzle, Visual.material(Color("ffe4a0")))
-	mesh.look_at(muzzle + direction)
-	shells.append({"node": mesh, "position": muzzle, "velocity": direction * 115, "life": 5.0})
+	var muzzle: Vector3 = actor.model.muzzle.global_position
+	var direction: Vector3 = -actor.model.muzzle.global_basis.z
+	var obstruction := ray(actor.model.barrel.global_position,muzzle,[actor.get_rid()])
+	fx.fire(muzzle,direction)
+	actor.model.kick_recoil()
+	if not obstruction.is_empty():
+		impact(obstruction,actor.faction,damage,direction)
+		return
+	var color := Color("ffe4a0") if actor.faction==0 else Color("ff9871")
+	var mesh := Visual.box(self,Vector3(0.065,0.065,0.9),muzzle,Visual.material(color))
+	mesh.look_at(muzzle+direction)
+	shells.append({"node":mesh,"position":muzzle,"velocity":direction*115,"life":5.0,
+		"owner":actor.get_rid(),"faction":actor.faction,"damage":damage})
 
 func update_shells(dt: float) -> void:
 	for i in range(shells.size() - 1, -1, -1):
 		var shell := shells[i]
 		var next := Combat.advance(shell.position, shell.velocity, dt)
-		var contact := ray(shell.position, next.position)
+		var contact := ray(shell.position,next.position,[shell.owner])
 		shell.life -= dt
 		if not contact.is_empty() or shell.life <= 0:
 			if not contact.is_empty():
-				impact(contact)
+				impact(contact,shell.faction,shell.damage,shell.velocity)
 			shell.node.queue_free()
 			shells.remove_at(i)
 		else:
@@ -226,9 +255,22 @@ func update_shells(dt: float) -> void:
 			shell.node.position = next.position
 			shell.node.look_at(next.position + next.velocity)
 
-func impact(contact: Dictionary) -> void:
+func impact(contact: Dictionary, source_faction: int = 0, damage: float = 48.0, travel: Vector3 = Vector3.FORWARD) -> void:
 	fx.impact(contact.position, contact.get("normal", Vector3.UP))
 	var body: Object = contact.collider
+	if body.has_method("take_damage"):
+		if body.faction != source_faction:
+			var applied: int = body.take_damage(damage,travel)
+			if applied>0 and source_faction==0:
+				hits += 1
+				hit_flash = 0.4
+				if not body.dead:
+					message = "命中敌军 / 伤害 %d" % applied
+		return
+	if body.has_meta("base"):
+		if source_faction != 0:
+			battle.damage_base(damage)
+		return
 	if body.has_meta("target"):
 		hits += 1
 		hit_flash = 0.4

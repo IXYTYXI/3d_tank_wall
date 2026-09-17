@@ -4,6 +4,10 @@ var game: Node3D
 var menu: Control
 var title: Label
 var button: Button
+var secondary: Button
+var subtitle: Label
+var controls: Label
+var upgrades: VBoxContainer
 var font: Font = preload("res://assets/fonts/ui_chinese.tres")
 var ivory := Color("e4e6d5")
 var amber := Color("e9b56b")
@@ -26,12 +30,12 @@ func _ready() -> void:
 	column.set_anchors_and_offsets_preset(Control.PRESET_CENTER_LEFT)
 	column.offset_left = 100
 	column.offset_right = 600
-	column.offset_top = -190
-	column.offset_bottom = 190
-	column.custom_minimum_size = Vector2(500, 380)
-	column.add_theme_constant_override("separation", 18)
+	column.offset_top = -250
+	column.offset_bottom = 250
+	column.custom_minimum_size = Vector2(570, 500)
+	column.add_theme_constant_override("separation", 14)
 	var kicker := Label.new()
-	kicker.text = "训练任务 / 001                      单人模式"
+	kicker.text = "单机作战 / 基地防守与自由训练"
 	kicker.add_theme_color_override("font_color", amber)
 	kicker.add_theme_font_size_override("font_size", 14)
 	column.add_child(kicker)
@@ -41,11 +45,11 @@ func _ready() -> void:
 	# Godot reports the OpenType weight axis (wght) as this numeric tag.
 	title_font.variation_opentype = {2003265652: 700.0}
 	title.add_theme_font_override("font", title_font)
-	title.add_theme_font_size_override("font_size", 64)
+	title.add_theme_font_size_override("font_size", 52)
 	title.add_theme_color_override("font_color", ivory)
 	column.add_child(title)
-	var subtitle := Label.new()
-	subtitle.text = "第三人称坦克驾驶与射击原型\n\n驶上山脊，寻找射击角度，清除训练靶标。"
+	subtitle = Label.new()
+	subtitle.text = "守住指挥基地，击退五波敌军。\n利用掩体、侧翼射击与战地补给赢得战斗。"
 	subtitle.add_theme_color_override("font_color", muted)
 	subtitle.add_theme_font_size_override("font_size", 18)
 	column.add_child(subtitle)
@@ -59,19 +63,69 @@ func _ready() -> void:
 	style.content_margin_right = 25
 	button.add_theme_stylebox_override("normal", style)
 	button.add_theme_color_override("font_color", Color("172326"))
-	button.pressed.connect(func(): game.set_playing(true))
+	button.pressed.connect(_primary_pressed)
 	column.add_child(button)
-	var controls := Label.new()
-	controls.text = "W A S D 驾驶    鼠标 瞄准\n左键 / 空格 开火    右键 开镜    Shift 制动\n滚轮 调整镜头    Esc 暂停    R 重新开始"
+	secondary = Button.new()
+	secondary.text = "自由训练"
+	secondary.custom_minimum_size = Vector2(430,40)
+	secondary.add_theme_font_size_override("font_size",16)
+	secondary.pressed.connect(func():
+		if game.started:
+			game.get_tree().reload_current_scene()
+		else:
+			game.set_playing(true))
+	column.add_child(secondary)
+	upgrades = VBoxContainer.new()
+	upgrades.add_theme_constant_override("separation",10)
+	column.add_child(upgrades)
+	for item in [["armor","强化装甲：最大生命 +30，维修 +45"],["reload","高效装填：装填时间缩短 14%"],["mobility","机动强化：最高速度 +15%，维修 +15"]]:
+		var upgrade := Button.new()
+		upgrade.text = item[1]
+		upgrade.custom_minimum_size = Vector2(530,50)
+		upgrade.add_theme_font_size_override("font_size",17)
+		upgrade.pressed.connect(game.battle.apply_upgrade.bind(item[0]))
+		upgrades.add_child(upgrade)
+	upgrades.hide()
+	controls = Label.new()
+	controls.text = "W A S D 驾驶    鼠标 瞄准\n左键 / 空格 开火    右键 开镜    Shift 制动\n滚轮 调整镜头    E 应急维修（战斗中）\nEsc 暂停    R 返回主菜单"
 	controls.add_theme_color_override("font_color", muted)
 	controls.add_theme_font_size_override("font_size", 15)
 	column.add_child(controls)
+
+func _primary_pressed() -> void:
+	if game.battle.finished():
+		game.get_tree().reload_current_scene()
+	elif game.started:
+		game.set_playing(true)
+	else:
+		game.start_defense()
 
 func update_menu() -> void:
 	if not is_instance_valid(menu):
 		return
 	menu.visible = not game.playing
-	button.text = "继续训练    →" if game.started else "进入训练场    →"
+	var battle: Node3D = game.battle
+	var choosing: bool = battle.phase == "upgrade"
+	upgrades.visible = choosing
+	button.visible = not choosing
+	secondary.visible = not choosing and not battle.finished()
+	controls.visible = not choosing
+	secondary.text = "返回主菜单" if game.started else "自由训练"
+	if choosing:
+		title.text = "战地整备"
+		subtitle.text = "第 %d 波已清除，选择一项强化。\n坦克生命 %d / %d    基地耐久 %d / %d" % [battle.wave,game.tank.health,game.tank.max_health,battle.base_health,battle.base_max_health]
+	elif battle.finished():
+		title.text = "防守胜利" if battle.phase == "won" else "任务失败"
+		subtitle.text = "%s\n得分 %d · 击毁 %d 辆 · 坚守 %d 分 %02d 秒\n射击 %d 次 · 命中 %d 次" % [battle.result_reason,battle.score,battle.kills,int(battle.elapsed)/60,int(battle.elapsed)%60,game.shots,game.hits]
+		button.text = "返回主菜单    →"
+	elif game.started:
+		title.text = "战斗暂停" if battle.active() else "训练暂停"
+		subtitle.text = "战斗已暂停，敌军和炮弹均已停止。\n点击下方按钮继续。"
+		button.text = "继续战斗    →" if battle.active() else "继续训练    →"
+	else:
+		title.text = "钢铁战场"
+		subtitle.text = "守住指挥基地，击退五波敌军。\n利用掩体、侧翼射击与战地补给赢得战斗。"
+		button.text = "开始基地防守    →"
 	queue_redraw()
 
 func label_at(pos: Vector2, text: String, size_px: int = 16, color: Color = Color("e4e6d5")) -> void:
@@ -86,10 +140,12 @@ func _draw() -> void:
 	draw_rect(Rect2(28, 26, 295, 74), Color(0.03, 0.07, 0.08, 0.78))
 	draw_rect(Rect2(28, 26, 3, 74), amber)
 	label_at(Vector2(46, 53), "钢铁战场", 21)
-	label_at(Vector2(46, 80), "原型版本 / 训练场", 13, muted)
+	label_at(Vector2(46, 80), "基地防守 / 单机战斗" if game.battle.active() else "原型版本 / 训练场", 13, muted)
 	draw_rect(Rect2(w - 275, 26, 247, 74), Color(0.03, 0.07, 0.08, 0.78))
-	label_at(Vector2(w - 255, 49), "已摧毁   %02d / 06" % game.destroyed, 19)
-	label_at(Vector2(w - 255, 75), "射击 %02d 次    命中 %02d 次" % [game.shots, game.hits], 13, muted)
+	label_at(Vector2(w - 255, 49), "波次 %02d / 05 · 敌军 %d" % [game.battle.wave,game.battle.remaining()] if game.battle.active() else "已摧毁   %02d / 06" % game.destroyed, 19)
+	label_at(Vector2(w - 255, 75), "得分 %d    击毁 %d 辆" % [game.battle.score,game.battle.kills] if game.battle.active() else "射击 %02d 次    命中 %02d 次" % [game.shots,game.hits], 13, muted)
+	if game.battle.active():
+		draw_battle_status()
 	# Heading tape.
 	var heading := fposmod(-rad_to_deg(game.yaw), 360)
 	for i in range(-4, 5):
@@ -134,3 +190,53 @@ func _draw() -> void:
 	label_at(Vector2(w - 302, h - 78), "右键 开镜   左键 / 空格 开火", 13)
 	label_at(Vector2(w - 302, h - 51), "Shift 制动     Esc 暂停", 13, muted)
 	label_at(Vector2(30, h - 10), "白色十字：瞄准目标    黄色圆圈：预测落点    /    开发版本", 12, muted)
+
+func health_bar(rect: Rect2, value: int, maximum: int, color: Color) -> void:
+	draw_rect(rect,Color(0.1,0.13,0.13,0.9))
+	draw_rect(Rect2(rect.position,Vector2(rect.size.x*clampf(float(value)/maximum,0,1),rect.size.y)),color)
+
+func draw_battle_status() -> void:
+	var battle: Node3D = game.battle
+	var w := size.x
+	var h := size.y
+	draw_rect(Rect2(28,h-210,270,72),Color(0.03,0.07,0.08,0.85))
+	label_at(Vector2(46,h-180),"坦克生命 %d / %d" % [game.tank.health,game.tank.max_health],16)
+	health_bar(Rect2(46,h-164,232,7),game.tank.health,game.tank.max_health,Color("72c9a1"))
+	draw_rect(Rect2(w-275,112,247,75),Color(0.03,0.07,0.08,0.85))
+	label_at(Vector2(w-255,141),"基地耐久 %d / %d" % [battle.base_health,battle.base_max_health],15)
+	health_bar(Rect2(w-255,158,208,7),battle.base_health,battle.base_max_health,Color("69b8c7"))
+	if battle.phase == "countdown":
+		draw_rect(Rect2(28,112,295,40),Color(0.03,0.07,0.08,0.85))
+		label_at(Vector2(46,138),"第 %d 波将在 %d 秒后抵达" % [battle.wave+1,ceili(battle.countdown)],16,amber)
+	label_at(Vector2(w-302,h-125),"E 应急维修：剩余 %d 次" % battle.repair_charges,14,Color("88d7b2"))
+	if battle.fast_reload_time>0:
+		label_at(Vector2(size.x*0.5-130,h-146),"急速装填：剩余 %d 秒" % ceili(battle.fast_reload_time),14,amber)
+	# North-up tactical radar; all enemies are intentionally visible here.
+	var radar := Rect2(w-205,h-355,177,177)
+	draw_rect(radar,Color(0.03,0.07,0.08,0.86))
+	draw_rect(radar,Color(0.4,0.55,0.5,0.6),false,1)
+	label_at(radar.position+Vector2(9,19),"战术雷达 · 北 ↑",12,muted)
+	var center := radar.position+Vector2(88,100)
+	var scale_factor := 0.63
+	var base_point := center+Vector2(battle.base.position.x,battle.base.position.z)*scale_factor
+	draw_rect(Rect2(base_point-Vector2(4,4),Vector2(8,8)),Color("65cdb8"))
+	for enemy in battle.enemies:
+		draw_circle(center+Vector2(enemy.position.x,enemy.position.z)*scale_factor,3,Color("f1936b"))
+		var point: Vector3 = enemy.position+Vector3(0,3.1,0)
+		if game.camera.is_position_behind(point) or enemy.position.distance_to(game.tank.position)>110:
+			continue
+		var line: Dictionary = game.ray(game.camera.global_position,enemy.position+Vector3(0,1.3,0))
+		if line.is_empty() or line.collider != enemy:
+			continue
+		var screen: Vector2 = game.camera.unproject_position(point)
+		if screen.x<60 or screen.x>w-60 or screen.y<100 or screen.y>h-140:
+			continue
+		label_at(screen+Vector2(-42,-8),enemy.variant,13,Color("ffb491"))
+		health_bar(Rect2(screen-Vector2(45,0),Vector2(90,5)),enemy.health,enemy.max_health,Color("e58e67"))
+	for supply in battle.supplies:
+		draw_circle(center+Vector2(supply.node.position.x,supply.node.position.z)*scale_factor,2,Color("88deb2"))
+	var player_point := center+Vector2(game.tank.position.x,game.tank.position.z)*scale_factor
+	draw_circle(player_point,4,ivory)
+	draw_line(player_point,player_point+Vector2(-sin(game.tank.rotation.y),-cos(game.tank.rotation.y))*11,ivory,2)
+	if battle.damage_flash>0:
+		draw_rect(Rect2(Vector2.ZERO,size),Color(0.8,0.18,0.12,battle.damage_flash*0.7),false,10)
