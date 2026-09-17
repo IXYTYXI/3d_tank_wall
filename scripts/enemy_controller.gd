@@ -33,7 +33,7 @@ func tick(dt: float) -> void:
 	var game: Node3D = director.game
 	cooldown = maxf(0,cooldown-dt)
 	repath -= dt
-	var target: Node3D = game.tank if actor.position.distance_to(game.tank.position)<72 else director.base
+	var target: Node3D = game.tank if not is_instance_valid(director.base) or actor.position.distance_to(game.tank.position)<72 else director.base
 	var target_point: Vector3 = target.global_position+Vector3(0,1.25,0)
 	if target == director.base:
 		target_point = director.base.global_position+Vector3(0,0.8,0)

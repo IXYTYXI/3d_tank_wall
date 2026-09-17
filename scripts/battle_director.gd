@@ -6,6 +6,9 @@ const Navigation = preload("res://scripts/battle_navigation.gd")
 const EnemyAI = preload("res://scripts/enemy_controller.gd")
 const WAVE_COUNTS := [2,3,4,4,5]
 var game: Node3D
+var mode := "defense"
+var time_left := 180.0
+const ELIMINATION_TARGET := 12
 var phase := "training"
 var wave := 0
 var countdown := 5.0
@@ -33,9 +36,20 @@ func active() -> bool:
 func finished() -> bool:
 	return phase == "won" or phase == "lost"
 
-func start() -> void:
+func mode_name() -> String:
+	return {"defense":"基地防守","survival":"无尽生存","elimination":"限时歼灭"}.get(mode,"基地防守")
+
+func progress_text() -> String:
+	if mode == "elimination":
+		return "歼灭 %02d / %02d" % [kills,ELIMINATION_TARGET]
+	if mode == "survival":
+		return "波次 %02d · 敌军 %d" % [wave,remaining()]
+	return "波次 %02d / 05 · 敌军 %d" % [wave,remaining()]
+
+func start(selected_mode: String = "defense") -> void:
 	if active():
 		return
+	mode = selected_mode if selected_mode in ["defense","survival","elimination"] else "defense"
 	navigation = Navigation.new()
 	navigation.build(game.field)
 	for target in game.field.targets:
@@ -43,24 +57,25 @@ func start() -> void:
 			target.collision_layer = 0
 			target.queue_free()
 	game.field.targets.clear()
-	base = game.field.block(Vector3(8,3,6),Vector3(0,Field.height(0,65)+1.5,65),Visual.material(Color("4f7775"),0.25))
-	base.collision_layer = 4
-	base.set_meta("base",true)
-	Visual.box(base,Vector3(5,0.15,4),Vector3(0,1.6,0),Visual.material(Color("718882")))
-	Visual.cylinder(base,0.07,6,Vector3(2.7,4,0),Visual.material(Color("b0bcb2"),0.5))
-	Visual.box(base,Vector3(1.8,1,0.06),Vector3(3.6,6.5,0),Visual.material(Color("52bfaa")))
-	var badge := Label3D.new()
-	badge.text = "指挥基地"
-	badge.font = preload("res://assets/fonts/ui_chinese.tres")
-	badge.font_size = 64
-	badge.pixel_size = 0.025
-	badge.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	badge.position = Vector3(0,4,0)
-	base.add_child(badge)
+	if mode == "defense":
+		base = game.field.block(Vector3(8,3,6),Vector3(0,Field.height(0,65)+1.5,65),Visual.material(Color("4f7775"),0.25))
+		base.collision_layer = 4
+		base.set_meta("base",true)
+		Visual.box(base,Vector3(5,0.15,4),Vector3(0,1.6,0),Visual.material(Color("718882")))
+		Visual.cylinder(base,0.07,6,Vector3(2.7,4,0),Visual.material(Color("b0bcb2"),0.5))
+		Visual.box(base,Vector3(1.8,1,0.06),Vector3(3.6,6.5,0),Visual.material(Color("52bfaa")))
+		var badge := Label3D.new()
+		badge.text = "指挥基地"
+		badge.font = preload("res://assets/fonts/ui_chinese.tres")
+		badge.font_size = 64
+		badge.pixel_size = 0.025
+		badge.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		badge.position = Vector3(0,4,0)
+		base.add_child(badge)
 	game.tank.eliminated.connect(player_eliminated)
 	game.tank.damaged.connect(func(_amount: int): damage_flash = 0.45)
 	phase = "countdown"
-	game.message = "保护身后基地，准备迎敌"
+	game.message = "保护身后基地，准备迎敌" if mode=="defense" else "准备迎敌 / " + mode_name()
 
 func remaining() -> int:
 	return pending+enemies.size()
@@ -68,6 +83,11 @@ func remaining() -> int:
 func tick(dt: float) -> void:
 	if not active() or finished() or phase == "upgrade":
 		return
+	if mode == "elimination" and phase == "combat":
+		time_left = maxf(0,time_left-dt)
+		if time_left <= 0:
+			finish(false,"时间耗尽，未完成 12 辆歼灭目标")
+			return
 	elapsed += dt
 	damage_flash = maxf(0,damage_flash-dt)
 	fast_reload_time = maxf(0,fast_reload_time-dt)
@@ -84,7 +104,9 @@ func tick(dt: float) -> void:
 			if is_instance_valid(controller.actor) and not controller.actor.dead:
 				controller.tick(dt)
 		if pending == 0 and enemies.is_empty():
-			if wave == WAVE_COUNTS.size():
+			if mode == "elimination":
+				finish(true,"歼灭目标达成")
+			elif mode == "defense" and wave == WAVE_COUNTS.size():
 				finish(true,"全部敌军已被击退，基地守住了")
 			else:
 				phase = "upgrade"
@@ -95,7 +117,7 @@ func begin_wave() -> void:
 		return
 	wave += 1
 	phase = "combat"
-	pending = WAVE_COUNTS[wave-1]
+	pending = ELIMINATION_TARGET if mode=="elimination" else mini(12,wave+2) if mode=="survival" else WAVE_COUNTS[wave-1]
 	spawn_timer = 0
 	game.message = "第 %d 波来袭，注意雷达" % wave
 	spawn_enemy()
@@ -105,11 +127,11 @@ func spawn_enemy() -> CharacterBody3D:
 		return null
 	var actor := Tank.new()
 	actor.faction = 1
-	actor.variant = "重型坦克" if wave>=3 and spawned%3==0 else "轻型坦克" if spawned%3==1 else "标准坦克"
+	actor.variant = "重型坦克" if (wave>=3 or mode=="elimination") and spawned%3==0 else "轻型坦克" if spawned%3==1 else "标准坦克"
 	actor.max_health = 135 if actor.variant=="重型坦克" else 65 if actor.variant=="轻型坦克" else 90
 	actor.max_forward_speed = 4.2 if actor.variant=="重型坦克" else 7.0 if actor.variant=="轻型坦克" else 5.5
 	var lane: float = [-24.0,0.0,24.0][spawned%3]
-	var pos: Vector3 = navigation.safe_position(Vector3(lane,0,-30-wave*7-(spawned%2)*10))
+	var pos: Vector3 = navigation.safe_position(Vector3(lane,0,-30-mini(wave,5)*7-(spawned%2)*10))
 	# Avoid spawning into a surviving tank in the same lane.
 	for enemy in enemies:
 		if enemy.position.distance_to(pos)<8:
@@ -125,7 +147,7 @@ func spawn_enemy() -> CharacterBody3D:
 	controllers.append(controller)
 	spawned += 1
 	pending -= 1
-	spawn_timer = 5.0
+	spawn_timer = 2.5 if mode=="elimination" else 5.0
 	return actor
 
 func enemy_eliminated(actor: CharacterBody3D) -> void:
@@ -142,12 +164,14 @@ func enemy_eliminated(actor: CharacterBody3D) -> void:
 	game.fx.impact(actor.position+Vector3.UP,Vector3.UP,true)
 	drop_supply(actor.position,"repair" if kills%2==1 else "reload")
 	actor.queue_free()
+	if mode=="elimination" and kills>=ELIMINATION_TARGET:
+		finish(true,"在时限内完成 12 辆歼灭目标")
 
 func player_eliminated(_actor: CharacterBody3D) -> void:
 	finish(false,"你的坦克已被击毁")
 
 func damage_base(amount: float) -> void:
-	if finished() or not active():
+	if finished() or not active() or mode != "defense":
 		return
 	base_health = maxi(0,base_health-roundi(amount))
 	game.message = "基地受到攻击！"
@@ -160,7 +184,7 @@ func finish(won: bool, reason: String) -> void:
 	phase = "won" if won else "lost"
 	result_reason = reason
 	if won:
-		score += 500+base_health
+		score += 500+(base_health if mode=="defense" else ceili(time_left)*5 if mode=="elimination" else 0)
 	game.set_playing(false)
 
 func use_repair() -> bool:

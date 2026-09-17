@@ -9,3 +9,5 @@
 - 使用 Godot 4.7.2 标准版及 GDScript；引擎和临时产物在被忽略的 work/、outputs/。
 - 验证入口为 ./scripts/check.sh；视觉检查入口为 ./launch.command --script tests/visual.gd。
 - 原型设计、已完成内容与限制见 README.md 和 docs/implementation-plan.md。
+
+- 用户已确认加入无尽生存和限时歼灭，并明确要求封装 macOS 安装包、提供下载链接；授权发布本项目 GitHub Release。0.2.0 使用 ad-hoc 签名，不得声称 Apple 公证；打包检查见 scripts/package_macos.sh 和 scripts/check_macos.sh。

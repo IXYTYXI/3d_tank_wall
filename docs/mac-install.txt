@@ -1,0 +1,35 @@
+钢铁战场 0.2.0 — macOS 试玩版
+
+安装
+1. 打开 SteelFront-0.2.0-macOS-universal.dmg。
+2. 将“钢铁战场.app”拖到“Applications（应用程序）”。
+3. 从“应用程序”中打开“钢铁战场”。不需要另外安装 Godot。
+
+首次运行
+这是独立开发的试玩版本，使用 ad-hoc 签名，尚无 Apple Developer ID 签名和 Apple 公证。
+若 macOS 提示无法验证开发者，请先尝试打开一次，再到“系统设置 → 隐私与安全性”，找到该应用并选择“仍要打开”。
+仅在确认下载自本项目 GitHub Release 时允许打开。无需关闭 Gatekeeper 或修改系统安全设置。
+公司或学校管理的 Mac 可能不允许此操作；请联系管理员。
+参考：https://support.apple.com/zh-cn/102445
+
+玩法
+基地防守：守住基地并击退五波共 18 辆敌军。玩家或基地被毁即失败。
+无尽生存：挑战连续波次，波间三选一强化，坦克被毁时结算。
+限时歼灭：180 秒内击毁 12 辆敌军；暂停不扣时间，任务开始前有 5 秒准备。
+自由训练：练习驾驶、瞄准和射击六个训练靶。
+
+操作
+W/S 前进倒车，A/D 车体转向，鼠标瞄准。
+左键或空格开火，右键开镜，滚轮调整镜头，Shift 制动。
+E 应急维修（战斗中，每局两次），Esc 暂停，R 回主菜单。
+关闭窗口或 Command+Q 退出。
+
+兼容与限制
+Universal 2：Apple Silicon / Intel。Apple Silicon 最低 macOS 11，Intel 最低 macOS 10.13。
+本版已在 Apple M4 上验证，Intel 尚未实机测试。
+当前为单机原型，无存档或联网；重开清除本局强化和分数。拥挤场景下敌军偶尔可能卡住。
+
+来源与许可证
+项目：https://github.com/IXYTYXI/3d_tank_wall
+Godot Engine 4.7.2，MIT 许可；中文字体 Noto Sans SC，SIL OFL 1.1。
+第三方许可随包附于 Licenses 文件夹。

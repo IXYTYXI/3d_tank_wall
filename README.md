@@ -4,7 +4,15 @@
 
 ![坦克实际运行画面](docs/screenshots/tank-detail.png)
 
-## 本机试玩
+## macOS 安装包
+
+[下载 0.2.0 macOS 通用 DMG](https://github.com/IXYTYXI/3d_tank_wall/releases/download/v0.2.0-macos-preview/SteelFront-0.2.0-macOS-universal.dmg) · [版本说明与 SHA-256](https://github.com/IXYTYXI/3d_tank_wall/releases/tag/v0.2.0-macos-preview)
+
+打开 DMG，将“钢铁战场.app”拖入 Applications，即可独立运行，无需安装 Godot。Universal 2 包含 Apple Silicon 和 Intel；本机 Apple M4 已验证，Intel 尚未实机验证。
+
+此试玩包采用 ad-hoc 签名，**未经过 Apple 公证**。若首次启动被拦截，可在尝试打开后，到系统设置 → 隐私与安全性 → 仍要打开，详见 [Apple 官方说明](https://support.apple.com/zh-cn/102445)。不需要关闭系统安全机制。
+
+## 从源码本机试玩
 
 在 Finder 中双击 `launch.command`，然后点击 **开始基地防守**，或选择 **自由训练**。
 
@@ -47,6 +55,12 @@
 - 中文 HUD 显示生命、基地耐久、波次、敌军数量、分数和维修次数。右下雷达北向朝上，显示全场敌军和基地。
 - 暂停冻结战斗与计时；结算显示得分、击毁数量、时长及射击命中统计。R 可随时返回主菜单重新开始。
 
+## 其他模式
+
+- **无尽生存**：没有基地，连续挑战敌军波次，清空后选择强化。每波敌军逐渐增至 12 辆，同时最多 4 辆；玩家被毁时结算波数和分数。
+- **限时歼灭**：没有基地，5 秒准备后，在 180 秒内击毁 12 辆敌军。没有波间强化，暂停冻结任务时限；超时或玩家被毁即失败。
+- **自由训练**：保留六个静止靶标，可自由驾驶和练习弹道。
+
 ## 当前实现
 
 - 240 × 240 米的起伏地形，坡地具有真实三角网格碰撞。
@@ -68,7 +82,7 @@
 ./scripts/check.sh
 ```
 
-测试引擎可通过 `GODOT_BIN=/path/to/godot ./scripts/check.sh` 指定。共 90 项自动检查，另含工程导入与启动冒烟验证。检查包括：工程导入、6 项弹道/限位检查、27 项实际场景检查、12 项模型/动画/特效检查、5 项方向装甲规则、37 项基地防守集成检查、3 项持续 AI 实战模拟及启动冒烟测试。测试不会改变用户存档，也不访问网络。
+测试引擎可通过 `GODOT_BIN=/path/to/godot ./scripts/check.sh` 指定。共 107 项自动检查，另含工程导入与启动冒烟验证。检查包括：工程导入、6 项弹道/限位检查、27 项实际场景检查、12 项模型/动画/特效检查、5 项方向装甲规则、37 项基地防守集成检查、17 项模式边界检查、3 项持续 AI 实战模拟及启动冒烟测试。测试不会改变用户存档，也不访问网络。
 
 使用真实渲染器生成菜单和游戏截图：
 
@@ -90,7 +104,19 @@
 
 截图写入被忽略的 `outputs/`。这会短暂打开测试窗口；用于截图的近景相机属于测试工具，正常驾驶镜头仍为第三人称。
 
-已在本机 Apple M4 / macOS 上运行与截图验证。Windows、Linux 的导出和实机验证尚未进行；Android 和 iOS 后续再适配。尚无独立发行包、签名或公证。
+已在本机 Apple M4 / macOS 上运行与截图验证。macOS 独立安装包为 0.2.0 试玩版，采用 ad-hoc 签名，未公证。Windows、Linux 的导出和实机验证尚未进行；Android 和 iOS 后续再适配。
+
+## 构建 macOS 安装包
+
+将官方 Godot 4.7.2 标准版导出模板中的 `templates/macos.zip` 放到 `work/export-templates/macos.zip`，然后运行：
+
+```sh
+./scripts/check.sh
+./scripts/package_macos.sh
+./scripts/check_macos.sh
+```
+
+安装包和 SHA-256 文件输出到 `outputs/macos/`。导出预设包含游戏脚本、场景和资源，排除开发工具和测试。Godot 与中文字体第三方许可证随 DMG 分发。
 
 ## 文件结构
 

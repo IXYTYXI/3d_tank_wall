@@ -205,11 +205,14 @@ func _physics_process(dt: float) -> void:
 	hud.queue_redraw()
 
 func start_defense() -> void:
+	start_mode("defense")
+
+func start_mode(mode: String) -> void:
 	if battle.finished():
 		get_tree().reload_current_scene()
 		return
 	if not started:
-		battle.start()
+		battle.start(mode)
 	set_playing(true)
 
 func fire() -> void:

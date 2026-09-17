@@ -7,6 +7,7 @@ var button: Button
 var secondary: Button
 var subtitle: Label
 var controls: Label
+var modes: HBoxContainer
 var upgrades: VBoxContainer
 var font: Font = preload("res://assets/fonts/ui_chinese.tres")
 var ivory := Color("e4e6d5")
@@ -30,12 +31,12 @@ func _ready() -> void:
 	column.set_anchors_and_offsets_preset(Control.PRESET_CENTER_LEFT)
 	column.offset_left = 100
 	column.offset_right = 600
-	column.offset_top = -250
-	column.offset_bottom = 250
+	column.offset_top = -280
+	column.offset_bottom = 280
 	column.custom_minimum_size = Vector2(570, 500)
 	column.add_theme_constant_override("separation", 14)
 	var kicker := Label.new()
-	kicker.text = "单机作战 / 基地防守与自由训练"
+	kicker.text = "单机作战 / 基地防守 · 无尽生存 · 限时歼灭"
 	kicker.add_theme_color_override("font_color", amber)
 	kicker.add_theme_font_size_override("font_size", 14)
 	column.add_child(kicker)
@@ -65,6 +66,16 @@ func _ready() -> void:
 	button.add_theme_color_override("font_color", Color("172326"))
 	button.pressed.connect(_primary_pressed)
 	column.add_child(button)
+	modes = HBoxContainer.new()
+	modes.add_theme_constant_override("separation",12)
+	column.add_child(modes)
+	for item in [["survival","无尽生存 / 挑战更多波次"],["elimination","限时歼灭 / 180 秒击毁 12 辆"]]:
+		var mode_button := Button.new()
+		mode_button.text = item[1]
+		mode_button.custom_minimum_size = Vector2(278,48)
+		mode_button.add_theme_font_size_override("font_size",15)
+		mode_button.pressed.connect(game.start_mode.bind(item[0]))
+		modes.add_child(mode_button)
 	secondary = Button.new()
 	secondary.text = "自由训练"
 	secondary.custom_minimum_size = Vector2(430,40)
@@ -110,13 +121,18 @@ func update_menu() -> void:
 	button.visible = not choosing
 	secondary.visible = not choosing and not battle.finished()
 	controls.visible = not choosing
+	modes.visible = not game.started
 	secondary.text = "返回主菜单" if game.started else "自由训练"
 	if choosing:
 		title.text = "战地整备"
-		subtitle.text = "第 %d 波已清除，选择一项强化。\n坦克生命 %d / %d    基地耐久 %d / %d" % [battle.wave,game.tank.health,game.tank.max_health,battle.base_health,battle.base_max_health]
+		subtitle.text = "第 %d 波已清除，选择一项强化。\n坦克生命 %d / %d" % [battle.wave,game.tank.health,game.tank.max_health]
+		if battle.mode=="defense":
+			subtitle.text += "    基地耐久 %d / %d" % [battle.base_health,battle.base_max_health]
 	elif battle.finished():
-		title.text = "防守胜利" if battle.phase == "won" else "任务失败"
+		title.text = ("防守胜利" if battle.mode=="defense" else "歼灭成功") if battle.phase == "won" else "生存结束" if battle.mode=="survival" else "任务失败"
 		subtitle.text = "%s\n得分 %d · 击毁 %d 辆 · 坚守 %d 分 %02d 秒\n射击 %d 次 · 命中 %d 次" % [battle.result_reason,battle.score,battle.kills,int(battle.elapsed)/60,int(battle.elapsed)%60,game.shots,game.hits]
+		if battle.mode=="survival":
+			subtitle.text += "\n抵达第 %d 波" % battle.wave
 		button.text = "返回主菜单    →"
 	elif game.started:
 		title.text = "战斗暂停" if battle.active() else "训练暂停"
@@ -140,9 +156,9 @@ func _draw() -> void:
 	draw_rect(Rect2(28, 26, 295, 74), Color(0.03, 0.07, 0.08, 0.78))
 	draw_rect(Rect2(28, 26, 3, 74), amber)
 	label_at(Vector2(46, 53), "钢铁战场", 21)
-	label_at(Vector2(46, 80), "基地防守 / 单机战斗" if game.battle.active() else "原型版本 / 训练场", 13, muted)
+	label_at(Vector2(46, 80), game.battle.mode_name()+" / 单机战斗" if game.battle.active() else "原型版本 / 训练场", 13, muted)
 	draw_rect(Rect2(w - 275, 26, 247, 74), Color(0.03, 0.07, 0.08, 0.78))
-	label_at(Vector2(w - 255, 49), "波次 %02d / 05 · 敌军 %d" % [game.battle.wave,game.battle.remaining()] if game.battle.active() else "已摧毁   %02d / 06" % game.destroyed, 19)
+	label_at(Vector2(w - 255, 49), game.battle.progress_text() if game.battle.active() else "已摧毁   %02d / 06" % game.destroyed, 19)
 	label_at(Vector2(w - 255, 75), "得分 %d    击毁 %d 辆" % [game.battle.score,game.battle.kills] if game.battle.active() else "射击 %02d 次    命中 %02d 次" % [game.shots,game.hits], 13, muted)
 	if game.battle.active():
 		draw_battle_status()
@@ -202,12 +218,17 @@ func draw_battle_status() -> void:
 	draw_rect(Rect2(28,h-210,270,72),Color(0.03,0.07,0.08,0.85))
 	label_at(Vector2(46,h-180),"坦克生命 %d / %d" % [game.tank.health,game.tank.max_health],16)
 	health_bar(Rect2(46,h-164,232,7),game.tank.health,game.tank.max_health,Color("72c9a1"))
-	draw_rect(Rect2(w-275,112,247,75),Color(0.03,0.07,0.08,0.85))
-	label_at(Vector2(w-255,141),"基地耐久 %d / %d" % [battle.base_health,battle.base_max_health],15)
-	health_bar(Rect2(w-255,158,208,7),battle.base_health,battle.base_max_health,Color("69b8c7"))
+	if battle.mode=="defense":
+		draw_rect(Rect2(w-275,112,247,75),Color(0.03,0.07,0.08,0.85))
+		label_at(Vector2(w-255,141),"基地耐久 %d / %d" % [battle.base_health,battle.base_max_health],15)
+		health_bar(Rect2(w-255,158,208,7),battle.base_health,battle.base_max_health,Color("69b8c7"))
+	elif battle.mode=="elimination":
+		draw_rect(Rect2(w-275,112,247,75),Color(0.03,0.07,0.08,0.85))
+		label_at(Vector2(w-255,141),"剩余时间 %02d:%02d" % [ceili(battle.time_left)/60,ceili(battle.time_left)%60],18,amber)
+		label_at(Vector2(w-255,169),"180 秒内击毁 12 辆敌军",13,muted)
 	if battle.phase == "countdown":
 		draw_rect(Rect2(28,112,295,40),Color(0.03,0.07,0.08,0.85))
-		label_at(Vector2(46,138),"第 %d 波将在 %d 秒后抵达" % [battle.wave+1,ceili(battle.countdown)],16,amber)
+		label_at(Vector2(46,138),("任务将在 %d 秒后开始" % ceili(battle.countdown)) if battle.mode=="elimination" else ("第 %d 波将在 %d 秒后抵达" % [battle.wave+1,ceili(battle.countdown)]),16,amber)
 	label_at(Vector2(w-302,h-125),"E 应急维修：剩余 %d 次" % battle.repair_charges,14,Color("88d7b2"))
 	if battle.fast_reload_time>0:
 		label_at(Vector2(size.x*0.5-130,h-146),"急速装填：剩余 %d 秒" % ceili(battle.fast_reload_time),14,amber)
@@ -218,8 +239,9 @@ func draw_battle_status() -> void:
 	label_at(radar.position+Vector2(9,19),"战术雷达 · 北 ↑",12,muted)
 	var center := radar.position+Vector2(88,100)
 	var scale_factor := 0.63
-	var base_point := center+Vector2(battle.base.position.x,battle.base.position.z)*scale_factor
-	draw_rect(Rect2(base_point-Vector2(4,4),Vector2(8,8)),Color("65cdb8"))
+	if is_instance_valid(battle.base):
+		var base_point := center+Vector2(battle.base.position.x,battle.base.position.z)*scale_factor
+		draw_rect(Rect2(base_point-Vector2(4,4),Vector2(8,8)),Color("65cdb8"))
 	for enemy in battle.enemies:
 		draw_circle(center+Vector2(enemy.position.x,enemy.position.z)*scale_factor,3,Color("f1936b"))
 		var point: Vector3 = enemy.position+Vector3(0,3.1,0)
