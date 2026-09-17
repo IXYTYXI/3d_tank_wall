@@ -1,17 +1,17 @@
 [
   {
-    "tag_name": "v0.4.3-preview",
+    "tag_name": "v0.4.4-preview",
     "draft": false,
     "assets": [
       {
-        "name": "SteelFront-0.4.3-macOS-universal.dmg",
+        "name": "SteelFront-0.4.4-macOS-universal.dmg",
         "state": "uploaded",
-        "browser_download_url": "https://github.com/IXYTYXI/3d_tank_wall/releases/download/v0.4.3-preview/SteelFront-0.4.3-macOS-universal.dmg"
+        "browser_download_url": "https://github.com/IXYTYXI/3d_tank_wall/releases/download/v0.4.4-preview/SteelFront-0.4.4-macOS-universal.dmg"
       },
       {
-        "name": "SteelFront-0.4.3-Windows-x64.zip",
+        "name": "SteelFront-0.4.4-Windows-x64.zip",
         "state": "uploaded",
-        "browser_download_url": "https://github.com/IXYTYXI/3d_tank_wall/releases/download/v0.4.3-preview/SteelFront-0.4.3-Windows-x64.zip"
+        "browser_download_url": "https://github.com/IXYTYXI/3d_tank_wall/releases/download/v0.4.4-preview/SteelFront-0.4.4-Windows-x64.zip"
       }
     ]
   }
