@@ -1,7 +1,7 @@
-钢铁战场 0.4.1 — macOS 试玩版
+钢铁战场 0.4.2 — macOS 试玩版
 
 安装
-1. 打开 SteelFront-0.4.1-macOS-universal.dmg。
+1. 打开 SteelFront-0.4.2-macOS-universal.dmg。
 2. 将“钢铁战场.app”拖到“Applications（应用程序）”。
 3. 从“应用程序”中打开“钢铁战场”。不需要另外安装 Godot。
 
@@ -37,3 +37,6 @@ Universal 2：Apple Silicon / Intel。Apple Silicon 最低 macOS 11，Intel 最�
 项目：https://github.com/IXYTYXI/3d_tank_wall
 Godot Engine 4.7.2，MIT 许可；中文字体 Noto Sans SC，SIL OFL 1.1。
 第三方许可随包附于 Licenses 文件夹。
+
+更新游戏
+在主菜单右下角点击“检查更新”，发现新版后点击“下载新版（浏览器）”。下载完成后退出游戏再安装。联网失败可点击“打开下载页”。Mac 替换 Applications 中的旧 App；Windows 将新版完整解压到新文件夹，不能只替换 EXE。旧版需先手动下载本版，才能使用更新入口。

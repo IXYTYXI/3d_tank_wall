@@ -9,6 +9,11 @@ var subtitle: Label
 var controls: Label
 var modes: HBoxContainer
 var upgrades: VBoxContainer
+var update_button: Button
+var download_button: Button
+var update_status: Label
+var updater: Node
+var update_url := "https://github.com/IXYTYXI/3d_tank_wall/releases"
 var font: Font = preload("res://assets/fonts/ui_chinese.tres")
 var ivory := Color("e4e6d5")
 var amber := Color("e9b56b")
@@ -102,6 +107,49 @@ func _ready() -> void:
 	controls.add_theme_color_override("font_color", muted)
 	controls.add_theme_font_size_override("font_size", 15)
 	column.add_child(controls)
+	build_update_panel()
+
+func build_update_panel() -> void:
+	updater = preload("res://scripts/game_update.gd").new()
+	add_child(updater)
+	var panel := VBoxContainer.new()
+	menu.add_child(panel)
+	panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	panel.offset_left = -440
+	panel.offset_right = -32
+	panel.offset_top = -180
+	panel.offset_bottom = -24
+	panel.add_theme_constant_override("separation",8)
+	var version_label := Label.new()
+	version_label.text = "当前版本 " + str(ProjectSettings.get_setting("application/config/version"))
+	panel.add_child(version_label)
+	var row := HBoxContainer.new()
+	panel.add_child(row)
+	update_button = Button.new()
+	update_button.text = "检查更新"
+	update_button.custom_minimum_size = Vector2(180,42)
+	row.add_child(update_button)
+	download_button = Button.new()
+	download_button.text = "打开下载页"
+	download_button.custom_minimum_size = Vector2(190,42)
+	row.add_child(download_button)
+	update_status = Label.new()
+	update_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	update_status.text = "手动检查新版；下载完成后退出游戏再安装。"
+	update_status.add_theme_font_size_override("font_size",15)
+	panel.add_child(update_status)
+	update_button.pressed.connect(func():
+		update_button.disabled = true
+		update_status.text = "正在检查更新……"
+		updater.check_now())
+	updater.checked.connect(func(message: String, url: String):
+		update_button.disabled = false
+		update_status.text = message
+		update_url = url if not url.is_empty() else updater.PAGE
+		download_button.text = "下载新版（浏览器）" if not url.is_empty() else "打开下载页")
+	download_button.pressed.connect(func():
+		if OS.shell_open(update_url)!=OK:
+			update_status.text = "浏览器无法打开，请从说明书中的下载链接更新。")
 
 func _primary_pressed() -> void:
 	if game.battle.finished():

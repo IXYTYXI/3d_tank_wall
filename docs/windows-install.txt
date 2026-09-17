@@ -1,4 +1,4 @@
-钢铁战场 0.4.1 — Windows 64 位试玩版
+钢铁战场 0.4.2 — Windows 64 位试玩版
 
 安装与启动
 1. 将 ZIP 完整解压到一个文件夹。
@@ -31,3 +31,6 @@ E 应急维修（战斗中，每局两次），Esc 暂停，R 回主菜单。
 项目：https://github.com/IXYTYXI/3d_tank_wall
 Godot Engine 4.7.2，MIT 许可；中文字体 Noto Sans SC，SIL OFL 1.1。
 第三方许可随包附于 Licenses 文件夹。
+
+更新游戏
+在主菜单右下角点击“检查更新”，发现新版后点击“下载新版（浏览器）”。下载完成后退出游戏再安装。联网失败可点击“打开下载页”。Mac 替换 Applications 中的旧 App；Windows 将新版完整解压到新文件夹，不能只替换 EXE。旧版需先手动下载本版，才能使用更新入口。
