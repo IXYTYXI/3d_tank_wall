@@ -1,0 +1,5 @@
+.godot/
+work/
+outputs/
+.DS_Store
+*.tmp
