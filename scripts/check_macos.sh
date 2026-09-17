@@ -1,7 +1,8 @@
 #!/bin/sh
 set -eu
 PROJECT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
-APP="$PROJECT_DIR/outputs/macos/SteelFront.app"
+PACKAGE_VERSION=$(awk -F'"' '/^config\/version=/ {print $2}' "$PROJECT_DIR/project.godot")
+APP="$PROJECT_DIR/outputs/macos/SteelFront-$PACKAGE_VERSION.app"
 BIN="$APP/Contents/MacOS/钢铁战场"
 LOG_DIR="$PROJECT_DIR/work/package"
 mkdir -p "$LOG_DIR"
@@ -28,7 +29,7 @@ run_check standalone --quit-after 90
 # Release templates intentionally reject external script overrides. Verify their
 # compiled PCK resources with the matching editor, without using source resources.
 GODOT_BIN=${GODOT_BIN:-"$PROJECT_DIR/work/tools/Godot.app/Contents/MacOS/Godot"}
-for suite in modes battle_integration; do
+for suite in modes battle_integration world_models world_collisions; do
   "$GODOT_BIN" --headless --main-pack "$APP/Contents/Resources/钢铁战场.pck" --script "$PROJECT_DIR/tests/$suite.gd" > "$LOG_DIR/exported-$suite.log" 2>&1
   if grep -E 'SCRIPT ERROR|ERROR:|FAIL |WARNING:' "$LOG_DIR/exported-$suite.log"; then
     exit 1

@@ -3,6 +3,7 @@ set -eu
 PROJECT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 GODOT_BIN=${GODOT_BIN:-"$PROJECT_DIR/work/tools/Godot.app/Contents/MacOS/Godot"}
 cd "$PROJECT_DIR"
+PACKAGE_VERSION=$(awk -F'"' '/^config\/version=/ {print $2}' project.godot)
 if [ ! -f work/export-templates/macos.zip ]; then
   echo 'Missing official macOS export template: work/export-templates/macos.zip' >&2
   exit 1
@@ -23,9 +24,9 @@ mkdir "$STAGING/Licenses"
 cp docs/licenses/Godot-LICENSE.txt docs/licenses/Godot-COPYRIGHT.txt "$STAGING/Licenses/"
 cp assets/fonts/OFL.txt "$STAGING/Licenses/NotoSansSC-OFL.txt"
 # Keep a separately launchable copy for export validation.
-ditto "$STAGING/钢铁战场.app" outputs/macos/SteelFront.app
-hdiutil create -ov -format UDZO -fs HFS+ -volname '钢铁战场 0.2.0' -srcfolder "$STAGING" outputs/macos/SteelFront-0.2.0-macOS-universal.dmg
-hdiutil verify outputs/macos/SteelFront-0.2.0-macOS-universal.dmg
+ditto "$STAGING/钢铁战场.app" "outputs/macos/SteelFront-$PACKAGE_VERSION.app"
+hdiutil create -ov -format UDZO -fs HFS+ -volname "钢铁战场 $PACKAGE_VERSION" -srcfolder "$STAGING" "outputs/macos/SteelFront-$PACKAGE_VERSION-macOS-universal.dmg"
+hdiutil verify "outputs/macos/SteelFront-$PACKAGE_VERSION-macOS-universal.dmg"
 cd outputs/macos
-LC_ALL=C shasum -a 256 SteelFront-0.2.0-macOS-universal.dmg > SHA256SUMS.txt
+LC_ALL=C shasum -a 256 "SteelFront-$PACKAGE_VERSION-macOS-universal.dmg" > SHA256SUMS.txt
 cat SHA256SUMS.txt

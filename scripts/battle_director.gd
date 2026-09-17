@@ -4,6 +4,7 @@ const Visual = preload("res://scripts/tank_visual.gd")
 const Field = preload("res://scripts/battlefield.gd")
 const Navigation = preload("res://scripts/battle_navigation.gd")
 const EnemyAI = preload("res://scripts/enemy_controller.gd")
+const Assets = preload("res://scripts/battle_assets.gd")
 const WAVE_COUNTS := [2,3,4,4,5]
 var game: Node3D
 var mode := "defense"
@@ -51,27 +52,40 @@ func start(selected_mode: String = "defense") -> void:
 		return
 	mode = selected_mode if selected_mode in ["defense","survival","elimination"] else "defense"
 	navigation = Navigation.new()
-	navigation.build(game.field)
 	for target in game.field.targets:
 		if is_instance_valid(target):
 			target.collision_layer = 0
 			target.queue_free()
 	game.field.targets.clear()
 	if mode == "defense":
-		base = game.field.block(Vector3(8,3,6),Vector3(0,Field.height(0,65)+1.5,65),Visual.material(Color("4f7775"),0.25))
+		base = game.field.block(Vector3(8.8,3.4,6.8),Vector3(0,Field.height(0,65)+1.7,65),Visual.material(Color("4f7775")),false)
 		base.collision_layer = 4
 		base.set_meta("base",true)
-		Visual.box(base,Vector3(5,0.15,4),Vector3(0,1.6,0),Visual.material(Color("718882")))
-		Visual.cylinder(base,0.07,6,Vector3(2.7,4,0),Visual.material(Color("b0bcb2"),0.5))
-		Visual.box(base,Vector3(1.8,1,0.06),Vector3(3.6,6.5,0),Visual.material(Color("52bfaa")))
+		var building: Node3D = Assets.headquarters(base)
+		building.position.y = -1.7
+		# Roof overhang and parapet remain solid to shells as well as vehicles.
+		var roof := CollisionShape3D.new()
+		var roof_shape := BoxShape3D.new()
+		roof_shape.size = Vector3(9.3,0.38,7.3)
+		roof.shape = roof_shape
+		roof.position.y = 1.52
+		base.add_child(roof)
+		for side in [-1.0,1.0]:
+			var bags := CollisionShape3D.new()
+			var bags_shape := BoxShape3D.new()
+			bags_shape.size = Vector3(0.62,1.15,3.20)
+			bags.shape = bags_shape
+			bags.position = Vector3(side*3.55,-1.12,-3.02)
+			base.add_child(bags)
 		var badge := Label3D.new()
 		badge.text = "指挥基地"
 		badge.font = preload("res://assets/fonts/ui_chinese.tres")
-		badge.font_size = 64
-		badge.pixel_size = 0.025
+		badge.font_size = 38
+		badge.pixel_size = 0.016
 		badge.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-		badge.position = Vector3(0,4,0)
+		badge.position = Vector3(0,4.5,0)
 		base.add_child(badge)
+	navigation.build(game.field)
 	game.tank.eliminated.connect(player_eliminated)
 	game.tank.damaged.connect(func(_amount: int): damage_flash = 0.45)
 	phase = "countdown"

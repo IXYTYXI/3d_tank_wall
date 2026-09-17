@@ -17,16 +17,17 @@ func build(field: Node3D) -> void:
 		if not body is StaticBody3D or body.has_meta("target"):
 			continue
 		for child in body.get_children():
-			if not child is CollisionShape3D or not child.shape is BoxShape3D:
+			if not child is CollisionShape3D or child.shape is ConcavePolygonShape3D:
 				continue
-			var half: Vector3 = child.shape.size*0.5
+			var bounds: AABB = child.shape.get_debug_mesh().get_aabb()
+			var half: Vector3 = bounds.size*0.5
 			var basis: Basis = child.global_basis
 			var extent: Vector3 = basis.x.abs()*half.x+basis.y.abs()*half.y+basis.z.abs()*half.z
-			var center: Vector3 = child.global_position
-			var left := clampi(floori((center.x-extent.x-3.2-ORIGIN)/CELL),0,COUNT-1)
-			var right := clampi(ceili((center.x+extent.x+3.2-ORIGIN)/CELL),0,COUNT-1)
-			var top := clampi(floori((center.z-extent.z-3.2-ORIGIN)/CELL),0,COUNT-1)
-			var bottom := clampi(ceili((center.z+extent.z+3.2-ORIGIN)/CELL),0,COUNT-1)
+			var center: Vector3 = child.global_transform*bounds.get_center()
+			var left := clampi(ceili((center.x-extent.x-2.9-ORIGIN)/CELL),0,COUNT-1)
+			var right := clampi(floori((center.x+extent.x+2.9-ORIGIN)/CELL),0,COUNT-1)
+			var top := clampi(ceili((center.z-extent.z-2.9-ORIGIN)/CELL),0,COUNT-1)
+			var bottom := clampi(floori((center.z+extent.z+2.9-ORIGIN)/CELL),0,COUNT-1)
 			for z in range(top,bottom+1):
 				for x in range(left,right+1):
 					grid.set_point_solid(Vector2i(x,z))

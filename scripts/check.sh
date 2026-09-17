@@ -23,6 +23,8 @@ run_check presentation --script tests/presentation.gd
 run_check integration --script tests/integration.gd
 run_check battle-rules --script tests/battle_rules.gd
 run_check battle-integration --script tests/battle_integration.gd
+run_check world-models --script tests/world_models.gd
+run_check world-collisions --script tests/world_collisions.gd
 run_check modes --script tests/modes.gd
 run_check enemy-simulation --fixed-fps 60 --script tests/enemy_simulation.gd
 run_check startup --quit-after 90

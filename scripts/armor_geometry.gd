@@ -5,11 +5,12 @@ static func plate(parent: Node3D, size: Vector3, pos: Vector3, mat: Material, be
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var b := minf(bevel, minf(size.y * 0.3, minf(size.x, size.z) * 0.2))
+	var safe_taper := clampf(taper,0,maxf(0,minf(size.x,size.z)*0.5-b-0.001))
 	var rings: Array[PackedVector3Array] = []
 	for layer in range(4):
 		var inset: float = b if layer == 0 or layer == 3 else 0.0
 		if layer >= 2:
-			inset += taper
+			inset += safe_taper
 		var hx := size.x * 0.5 - inset
 		var hz := size.z * 0.5 - inset
 		var cut := minf(bevel * 1.7, minf(hx, hz) * 0.45)
