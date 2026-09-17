@@ -79,33 +79,45 @@ func setup_environment() -> void:
 	var env := Environment.new()
 	env.background_mode = Environment.BG_SKY
 	var sky := Sky.new()
-	var sky_mat := ProceduralSkyMaterial.new()
-	sky_mat.sky_top_color = Color("263d50")
-	sky_mat.sky_horizon_color = Color("8a9c9d")
-	sky_mat.ground_bottom_color = Color("464b3b")
-	sky_mat.ground_horizon_color = Color("b7bda9")
+	var sky_mat := ShaderMaterial.new()
+	sky_mat.shader = preload("res://shaders/battle_sky.gdshader")
 	sky.sky_material = sky_mat
 	env.sky = sky
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = Color("859fad")
-	env.ambient_light_energy = 0.65
+	env.ambient_light_energy = 0.32
 	env.tonemap_mode = Environment.TONE_MAPPER_LINEAR
 	env.fog_enabled = true
-	env.fog_light_color = Color("798e94")
-	env.fog_density = 0.0018
+	env.fog_light_color = Color("71858b")
+	env.fog_density = 0.0032
 	env.fog_sky_affect = 0.2
+	# Optional cinematic renderer; the default remains compatible with older GPUs.
+	if RenderingServer.get_current_rendering_method() == "forward_plus":
+		env.tonemap_mode = Environment.TONE_MAPPER_ACES
+		env.tonemap_exposure = 0.7
+		env.ssao_enabled = true
+		env.ssao_radius = 1.8
+		env.ssao_intensity = 2.0
+		env.ssao_light_affect = 0.35
+		env.glow_enabled = true
+		env.glow_intensity = 0.5
+		env.volumetric_fog_enabled = true
+		env.volumetric_fog_density = 0.0015
+		env.volumetric_fog_albedo = Color("718995")
+		env.volumetric_fog_sky_affect = 0.25
+		env.volumetric_fog_length = 180.0
 	world.environment = env
 	add_child(world)
 	var sun := DirectionalLight3D.new()
 	sun.light_color = Color("ffe1a6")
-	sun.light_energy = 1.0
-	sun.rotation_degrees = Vector3(-29, 138, 0)
+	sun.light_energy = 1.6
+	sun.rotation_degrees = Vector3(-24, 138, 0)
 	sun.shadow_enabled = true
 	sun.directional_shadow_max_distance = 150
 	add_child(sun)
 	var fill := DirectionalLight3D.new()
 	fill.light_color = Color("8aaac4")
-	fill.light_energy = 0.32
+	fill.light_energy = 0.12
 	fill.rotation_degrees = Vector3(-45, -42, 0)
 	add_child(fill)
 

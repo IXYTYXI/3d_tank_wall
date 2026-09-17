@@ -4,6 +4,20 @@
 
 ![坦克实际运行画面](docs/screenshots/tank-detail.png)
 
+## 画质样板（开发分支）
+
+新增分层阴云、土路双履带车辙、湿土反光、草丛与碎石、外围树林和装甲漆面变化。草石按空间分块批量绘制，限制显示距离，不参与碰撞。
+
+在本机双击 `launch-cinematic.command` 可启动可选的 Forward+ 画质样板：环境遮蔽、体积雾、辉光与 ACES 色调映射。原来的 `launch.command` 仍使用兼容渲染器。Forward+ 已在 Apple M4 / Metal 上运行；其他 GPU 尚未实测。此轮改动尚未重新发布安装包，上面的 0.3.0 下载包不包含这些更新。
+
+复现实际截图与性能采样：
+
+```sh
+./launch-cinematic.command --script tests/render_slice_visual.gd
+```
+
+输出位于 `outputs/render-slice-*.png`。脚本暖机后记录 240 帧，1280×800 静态训练场、无战斗负载，不能视为激战性能或最低帧率保证。截图相机仅用于观察，实际仍可自由驾驶和开火。程序模型、贴图与场景密度仍明显低于参考宣传图。
+
 ## Windows 免安装版
 
 [下载 0.3.0 Windows 64 位 ZIP](https://github.com/IXYTYXI/3d_tank_wall/releases/download/v0.3.0-windows-preview/SteelFront-0.3.0-Windows-x64.zip) · [版本说明与 SHA-256](https://github.com/IXYTYXI/3d_tank_wall/releases/tag/v0.3.0-windows-preview)

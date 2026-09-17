@@ -15,13 +15,15 @@ void fragment() {
 	vec3 p = part_position;
 	float blotch = noise3(p*2.2 + vec3(3.4,1.0,0.0)) + noise3(p*5.0)*0.22;
 	float camo = smoothstep(0.49,0.57,blotch) * camouflage;
-	float grain = noise3(p*145.0);
-	float scratches = step(0.80,noise3(p*vec3(14.0,290.0,90.0))) * step(0.55,grain);
+	float grain = noise3(p*72.0);
+	float scratches = smoothstep(0.86,0.94,noise3(p*vec3(8.0,110.0,40.0))) * step(0.55,grain);
 	float chips = smoothstep(0.79,0.88,noise3(p*55.0));
 	vec3 color = mix(paint_color.rgb,patch_color.rgb,camo*0.65);
-	color *= 0.94 + grain*0.12;
+	float grime = noise3(p*8.0+vec3(0,9,0));
+	color *= 0.86 + grain*0.16 + noise3(p*0.8)*0.14;
+	color = mix(color,vec3(0.12,0.105,0.075),smoothstep(0.60,0.82,grime)*0.28);
 	color = mix(color,vec3(0.35,0.32,0.25),chips*0.7);
-	ALBEDO = mix(color,vec3(0.48,0.49,0.43),scratches*0.55);
-	METALLIC = 0.18 + scratches*0.55;
-	ROUGHNESS = clamp(0.58 + grain*0.15 - scratches*0.3,0.25,0.85);
+	ALBEDO = mix(color,vec3(0.48,0.49,0.43),scratches*0.3);
+	METALLIC = 0.12 + scratches*0.35;
+	ROUGHNESS = clamp(0.47 + grain*0.20 + grime*0.13 - scratches*0.3,0.25,0.85);
 }

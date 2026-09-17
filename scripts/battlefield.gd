@@ -59,6 +59,7 @@ func _ready() -> void:
 		var scale_value := rng.randf_range(0.72,1.35)
 		add_asset("pine",Vector3(x,0,z),Vector3.ONE*scale_value,rng.randf_range(0,TAU),i%6)
 	Assets.ridgeline(self)
+	add_child(preload("res://scripts/scenery_detail.gd").new())
 	# Invisible boundary walls retain the tank inside the playable terrain.
 	for side in [-1.0, 1.0]:
 		block(Vector3(2, 30, 242), Vector3(side * 121, 5, 0), concrete, false)

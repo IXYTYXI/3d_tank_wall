@@ -111,6 +111,7 @@ static func pine(parent: Node3D, seed_value: int = 0) -> Node3D:
 						Meshes.triangle(st,middle-Vector3.UP*width*0.5,point,middle+Vector3.UP*width*0.5,outward,color.darkened(0.10))
 	var needles := StandardMaterial3D.new()
 	needles.vertex_color_use_as_albedo = true
+	needles.vertex_color_is_srgb = true
 	needles.cull_mode = BaseMaterial3D.CULL_DISABLED
 	needles.roughness = 0.94
 	Meshes.mesh_node(root,st,needles)
@@ -370,4 +371,6 @@ static func ridgeline(parent: Node3D) -> void:
 			Meshes.triangle(st,rings[ring][sector],rings[ring+1][sector],rings[ring][sector+1],Vector3.UP)
 			Meshes.triangle(st,rings[ring][sector+1],rings[ring+1][sector],rings[ring+1][sector+1],Vector3.UP)
 	st.generate_normals()
-	Meshes.mesh_node(parent,st,mat("ridge","4d5d56"))
+	var mountain := ShaderMaterial.new()
+	mountain.shader = preload("res://shaders/ridgeline.gdshader")
+	Meshes.mesh_node(parent,st,mountain)
