@@ -12,8 +12,8 @@ import pathlib, struct, sys, zipfile
 with zipfile.ZipFile(sys.argv[1]) as z:
     assert z.testzip() is None, 'ZIP CRC failure'
     names = z.namelist()
-    assert len(names) == 7, names
-    for required in ('SteelFront.exe','SteelFront.pck','HighQuality.cmd','安装与玩法说明.txt','Licenses/Godot-LICENSE.txt','Licenses/Godot-COPYRIGHT.txt','Licenses/NotoSansSC-OFL.txt'):
+    assert len(names) == 9, names
+    for required in ('SteelFront.exe','SteelFront.pck','HighQuality.cmd','Uninstall.cmd','SteelFront.package','安装与玩法说明.txt','Licenses/Godot-LICENSE.txt','Licenses/Godot-COPYRIGHT.txt','Licenses/NotoSansSC-OFL.txt'):
         assert any(n.endswith('/'+required) for n in names), required
     exe = z.read(next(n for n in names if n.endswith('/SteelFront.exe')))
     assert exe[:2] == b'MZ'
@@ -22,13 +22,19 @@ with zipfile.ZipFile(sys.argv[1]) as z:
     assert struct.unpack_from('<H',exe,offset+4)[0] == 0x8664, 'Not x86_64'
     assert struct.unpack_from('<H',exe,offset+24)[0] == 0x20b, 'Not PE32+'
     z.extractall(sys.argv[2])
-print('Windows PE architecture, ZIP integrity and package contents: PASS')
+    marker = z.read(next(n for n in names if n.endswith('/SteelFront.package')))
+    assert marker == b'SteelFront portable package v1\n'
+    uninstaller = z.read(next(n for n in names if n.endswith('/Uninstall.cmd'))).decode('utf-8')
+    assert 'choice /C YN' in uninstaller and 'findstr /x /c:' in uninstaller
+    assert 'goto running' in uninstaller and 'goto incomplete' in uninstaller
+    assert ' /S' not in uninstaller and ' /s' not in uninstaller and 'taskkill' not in uninstaller.lower()
+print('Windows PE architecture, ZIP integrity, contents and uninstall guard checks: PASS')
 PY
 cd "$TEST_DIR"
 PCK="$TEST_DIR/SteelFront-$PACKAGE_VERSION-Windows-x64/SteelFront.pck"
 "$GODOT_BIN" --headless --main-pack "$PCK" --quit-after 90 > "$LOG_DIR/windows-resources-startup.log" 2>&1
 if grep -E 'SCRIPT ERROR|ERROR:|FAIL |WARNING:' "$LOG_DIR/windows-resources-startup.log"; then exit 1; fi
-for suite in game_update aim_input modes battle_integration world_models world_collisions; do
+for suite in reticle game_update aim_input modes battle_integration world_models world_collisions; do
   "$GODOT_BIN" --headless --main-pack "$PCK" --script "$PROJECT_DIR/tests/$suite.gd" > "$LOG_DIR/windows-$suite.log" 2>&1
   if grep -E 'SCRIPT ERROR|ERROR:|FAIL |WARNING:' "$LOG_DIR/windows-$suite.log"; then exit 1; fi
   grep -q 'PASS ' "$LOG_DIR/windows-$suite.log"

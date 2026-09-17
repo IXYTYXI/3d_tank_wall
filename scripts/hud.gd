@@ -224,15 +224,16 @@ func _draw() -> void:
 		draw_line(c + Vector2(70, 0), Vector2(w, c.y), Color(0.05, 0.07, 0.05, 0.8), 1)
 		for i in range(1, 8):
 			draw_line(c + Vector2(-5, i * 18), c + Vector2(5, i * 18), ivory, 1)
-	# White: mouse target. Amber: actual muzzle trajectory.
-	for direction in [Vector2.LEFT, Vector2.RIGHT, Vector2.UP, Vector2.DOWN]:
-		draw_line(c + direction * 10, c + direction * 22, ivory, 1.5, true)
-	draw_circle(c, 2, ivory)
-	var point: Vector3 = game.muzzle_hit
-	if not game.camera.is_position_behind(point):
-		var p: Vector2 = game.camera.unproject_position(point)
-		p = p.clamp(Vector2(20, 110), Vector2(w - 20, h - 110))
-		draw_arc(p, 9, 0, TAU, 30, Color("e67553") if game.blocked else amber, 2, true)
+	# Center is only the requested aim direction. Main cross follows the gun.
+	draw_circle(c, 2, muted)
+	draw_arc(c, 4, 0, TAU, 16, Color(0.8,0.85,0.8,0.4),1,true)
+	var p := gun_reticle_position()
+	var gun_color := Color("e67553") if game.blocked else ivory
+	if not game.camera.is_position_behind(game.muzzle_hit):
+		for direction in [Vector2.LEFT, Vector2.RIGHT, Vector2.UP, Vector2.DOWN]:
+			draw_line(p+direction*10,p+direction*22,gun_color,1.5,true)
+		draw_circle(p,2,gun_color)
+		draw_arc(p,9,0,TAU,30,Color("e67553") if game.blocked else amber,2,true)
 	if game.hit_flash > 0:
 		for direction in [Vector2(-1, -1), Vector2(1, -1), Vector2(-1, 1), Vector2(1, 1)]:
 			draw_line(c + direction * 25, c + direction * 35, amber, 3, true)
@@ -253,7 +254,10 @@ func _draw() -> void:
 	label_at(Vector2(c.x - 130, h - 62), game.message, 12, ivory)
 	label_at(Vector2(w - 302, h - 78), "右键 开镜   左键 / 空格 开火", 13)
 	label_at(Vector2(w - 302, h - 51), "Shift 制动     Esc 暂停", 13, muted)
-	label_at(Vector2(30, h - 10), "白色十字：瞄准目标    黄色圆圈：预测落点    /    开发版本", 12, muted)
+	label_at(Vector2(30, h - 10), "主准星：炮口预测落点    中央小点：鼠标目标    /    开发版本", 12, muted)
+
+func gun_reticle_position() -> Vector2:
+	return game.camera.unproject_position(game.muzzle_hit).clamp(Vector2(20,110),size-Vector2(20,110))
 
 func health_bar(rect: Rect2, value: int, maximum: int, color: Color) -> void:
 	draw_rect(rect,Color(0.1,0.13,0.13,0.9))

@@ -20,6 +20,7 @@ run_check() {
 run_check import --editor --import
 run_check combat --script tests/run.gd
 run_check presentation --script tests/presentation.gd
+run_check reticle --script tests/reticle.gd
 run_check updates --script tests/game_update.gd
 run_check aim-input --script tests/aim_input.gd
 run_check integration --script tests/integration.gd

@@ -4,9 +4,13 @@
 
 ![坦克实际运行画面](docs/screenshots/tank-detail.png)
 
-## 0.4.2 主菜单更新入口
+## 0.4.3 准星与 Windows 卸载入口
 
-主菜单右下角显示当前版本，点击“检查更新”查询本仓库已发布版本（含试玩版），按平台选择新版安装包。点击“下载新版（浏览器）”下载后退出游戏再安装。联网失败可以重试或直接打开下载页；不后台联网、不自动覆盖正在运行的游戏。0.4.1 及更早版本需手动下载一次 0.4.2，之后使用菜单检查。
+主准星跟随炮口预测落点，中央小点仅表示鼠标目标方向。Windows 包内新增 Uninstall.cmd：退出游戏后双击并确认，只删除当前解压目录的游戏主文件，保留其他文件、许可和用户缓存；不扫描其他旧版本。Windows 卸载脚本尚未在 Windows 实机执行验证。
+
+## 主菜单更新入口
+
+主菜单右下角显示当前版本，点击“检查更新”查询本仓库已发布版本（含试玩版），按平台选择新版安装包。点击“下载新版（浏览器）”下载后退出游戏再安装。联网失败可以重试或直接打开下载页；不后台联网、不自动覆盖正在运行的游戏。0.4.1 及更早版本需手动下载一次 0.4.3，之后使用菜单检查。
 
 ## 鼠标瞄准修复
 
@@ -16,7 +20,7 @@
 
 新增分层阴云、土路双履带车辙、湿土反光、草丛与碎石、外围树林和装甲漆面变化。草石按空间分块批量绘制，限制显示距离，不参与碰撞。
 
-在本机双击 `launch-cinematic.command` 可启动可选的 Forward+ 画质样板：环境遮蔽、体积雾、辉光与 ACES 色调映射。原来的 `launch.command` 仍使用兼容渲染器。Forward+ 已在 Apple M4 / Metal 上运行；其他 GPU 尚未实测。0.4.2 两端下载包均包含这些更新，默认兼容模式；Mac 包附高画质启动.command，Windows 包附 HighQuality.cmd。
+在本机双击 `launch-cinematic.command` 可启动可选的 Forward+ 画质样板：环境遮蔽、体积雾、辉光与 ACES 色调映射。原来的 `launch.command` 仍使用兼容渲染器。Forward+ 已在 Apple M4 / Metal 上运行；其他 GPU 尚未实测。0.4.3 两端下载包均包含这些更新，默认兼容模式；Mac 包附高画质启动.command，Windows 包附 HighQuality.cmd。
 
 复现实际截图与性能采样：
 
@@ -28,7 +32,7 @@
 
 ## Windows 免安装版
 
-[下载 0.4.2 Windows 64 位 ZIP](https://github.com/IXYTYXI/3d_tank_wall/releases/download/v0.4.2-preview/SteelFront-0.4.2-Windows-x64.zip) · [版本说明与 SHA-256](https://github.com/IXYTYXI/3d_tank_wall/releases/tag/v0.4.2-preview)
+[下载 0.4.3 Windows 64 位 ZIP](https://github.com/IXYTYXI/3d_tank_wall/releases/download/v0.4.3-preview/SteelFront-0.4.3-Windows-x64.zip) · [版本说明与 SHA-256](https://github.com/IXYTYXI/3d_tank_wall/releases/tag/v0.4.3-preview)
 
 完整解压后双击 `SteelFront.exe`，同目录保留 `SteelFront.pck`，无需安装 Godot。目标为 Windows 10/11、Intel / AMD 64 位电脑和支持 OpenGL 3.3 的显卡。包含基地防守、无尽生存、限时歼灭、自由训练及新版模型。
 
@@ -36,7 +40,7 @@
 
 ## macOS 安装包
 
-[下载 0.4.2 macOS 通用 DMG](https://github.com/IXYTYXI/3d_tank_wall/releases/download/v0.4.2-preview/SteelFront-0.4.2-macOS-universal.dmg) · [版本说明与 SHA-256](https://github.com/IXYTYXI/3d_tank_wall/releases/tag/v0.4.2-preview)
+[下载 0.4.3 macOS 通用 DMG](https://github.com/IXYTYXI/3d_tank_wall/releases/download/v0.4.3-preview/SteelFront-0.4.3-macOS-universal.dmg) · [版本说明与 SHA-256](https://github.com/IXYTYXI/3d_tank_wall/releases/tag/v0.4.3-preview)
 
 打开 DMG，将“钢铁战场.app”拖入 Applications，即可独立运行，无需安装 Godot。Universal 2 包含 Apple Silicon 和 Intel；本机 Apple M4 已验证，Intel 尚未实机验证。
 
@@ -91,7 +95,7 @@
 - **限时歼灭**：没有基地，5 秒准备后，在 180 秒内击毁 12 辆敌军。没有波间强化，暂停冻结任务时限；超时或玩家被毁即失败。
 - **自由训练**：保留六个静止靶标，可自由驾驶和练习弹道。
 
-## 0.4.2 战场模型
+## 0.4.3 战场模型
 
 - 针叶树：分段树干、放射分枝、细碎针叶，六种基础外形与随机缩放旋转。
 - 障碍：不规则岩体、斜面混凝土路障、磨损警示条、带底座和吊环的龙牙反坦克锥、三根工字钢构成的螺栓拒马。
@@ -145,7 +149,7 @@
 
 截图写入被忽略的 `outputs/`。这会短暂打开测试窗口；用于截图的近景相机属于测试工具，正常驾驶镜头仍为第三人称。
 
-已在本机 Apple M4 / macOS 上运行与截图验证。macOS 独立安装包为 0.4.2 试玩版，采用 ad-hoc 签名，未公证。Windows 已交叉导出并检查资源，尚未实机验证；Linux 的导出和实机验证尚未进行；Android 和 iOS 后续再适配。
+已在本机 Apple M4 / macOS 上运行与截图验证。macOS 独立安装包为 0.4.3 试玩版，采用 ad-hoc 签名，未公证。Windows 已交叉导出并检查资源，尚未实机验证；Linux 的导出和实机验证尚未进行；Android 和 iOS 后续再适配。
 
 ## 构建 macOS 安装包
 
