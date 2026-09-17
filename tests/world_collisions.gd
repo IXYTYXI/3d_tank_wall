@@ -10,6 +10,7 @@ func run() -> void:
 	var game = load("res://scenes/main.tscn").instantiate()
 	root.add_child(game)
 	game.set_physics_process(false)
+	game.set_process_input(false)
 	game.set_process_unhandled_input(false)
 	for kind in ["rock","barrier","dragon_tooth","hedgehog","pine"]:
 		var body: StaticBody3D = game.field.add_asset(kind,Vector3.ZERO,Vector3.ONE,0,0)

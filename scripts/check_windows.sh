@@ -28,7 +28,7 @@ cd "$TEST_DIR"
 PCK="$TEST_DIR/SteelFront-$PACKAGE_VERSION-Windows-x64/SteelFront.pck"
 "$GODOT_BIN" --headless --main-pack "$PCK" --quit-after 90 > "$LOG_DIR/windows-resources-startup.log" 2>&1
 if grep -E 'SCRIPT ERROR|ERROR:|FAIL |WARNING:' "$LOG_DIR/windows-resources-startup.log"; then exit 1; fi
-for suite in modes battle_integration world_models world_collisions; do
+for suite in aim_input modes battle_integration world_models world_collisions; do
   "$GODOT_BIN" --headless --main-pack "$PCK" --script "$PROJECT_DIR/tests/$suite.gd" > "$LOG_DIR/windows-$suite.log" 2>&1
   if grep -E 'SCRIPT ERROR|ERROR:|FAIL |WARNING:' "$LOG_DIR/windows-$suite.log"; then exit 1; fi
   grep -q 'PASS ' "$LOG_DIR/windows-$suite.log"

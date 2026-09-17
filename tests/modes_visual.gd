@@ -14,6 +14,7 @@ func run() -> void:
 	for mode in ["survival","elimination"]:
 		game = load("res://scenes/main.tscn").instantiate()
 		root.add_child(game)
+		game.set_process_input(false)
 		game.set_process_unhandled_input(false)
 		await frames(10)
 		if mode=="survival":

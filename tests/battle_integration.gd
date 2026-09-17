@@ -13,6 +13,7 @@ func _initialize() -> void:
 func session() -> void:
 	game = load("res://scenes/main.tscn").instantiate()
 	root.add_child(game)
+	game.set_process_input(false)
 	game.set_process_unhandled_input(false)
 	game.start_defense()
 	game.set_physics_process(false)

@@ -10,6 +10,7 @@ func capture() -> void:
 		await process_frame
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("res://outputs/menu.png")
+	game.set_process_input(false)
 	game.set_process_unhandled_input(false)
 	game.set_playing(true)
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
