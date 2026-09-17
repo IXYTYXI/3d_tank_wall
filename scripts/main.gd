@@ -30,7 +30,7 @@ var hit_flash := 0.0
 var destroyed := 0
 var shots := 0
 var hits := 0
-var message := "TRAINING RANGE / 06 TARGETS"
+var message := "训练场 / 共 6 个靶标"
 var audio: AudioStreamPlayer
 
 func _ready() -> void:
@@ -234,14 +234,14 @@ func impact(contact: Dictionary) -> void:
 		hit_flash = 0.4
 		var hp := int(body.get_meta("hp")) - 1
 		body.set_meta("hp", hp)
-		message = "TARGET %02d / HIT" % body.get_meta("index")
+		message = "靶标 %02d / 命中" % body.get_meta("index")
 		if hp <= 0:
 			destroyed += 1
-			message = "TARGET %02d / DESTROYED" % body.get_meta("index")
+			message = "靶标 %02d / 已摧毁" % body.get_meta("index")
 			fx.impact(contact.position, Vector3.UP, true)
 			body.queue_free()
 			if destroyed == 6:
-				message = "RANGE CLEAR / PRESS R TO RESTART"
+				message = "训练完成 / 按 R 重新开始"
 
 func play_boom() -> void:
 	if DisplayServer.get_name() == "headless":
