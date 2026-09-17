@@ -84,6 +84,35 @@ func run() -> void:
 	await frames(5)
 	check(game.arm.get_hit_length() > 9, "Spring arm restores after obstruction removed")
 	game.playing = true
+	var fire_key := InputEventKey.new()
+	fire_key.physical_keycode = KEY_SPACE
+	fire_key.pressed = true
+	Input.parse_input_event(fire_key)
+	Input.flush_buffered_events()
+	game.cooldown = 0
+	var initial_shots: int = game.shots
+	game._physics_process(0.01)
+	check(game.shots == initial_shots + 1, "Space fires the cannon")
+	check(not game.tank.brake, "Space firing does not apply the brake")
+	game._physics_process(0.01)
+	check(game.shots == initial_shots + 1, "Holding space respects reload time")
+	game.cooldown = 0
+	game._physics_process(0.01)
+	check(game.shots == initial_shots + 2, "Held space fires again after reload")
+	fire_key = fire_key.duplicate()
+	fire_key.pressed = false
+	Input.parse_input_event(fire_key)
+	var brake_key := InputEventKey.new()
+	brake_key.physical_keycode = KEY_SHIFT
+	brake_key.pressed = true
+	Input.parse_input_event(brake_key)
+	Input.flush_buffered_events()
+	game._physics_process(0.01)
+	check(game.tank.brake, "Shift applies the brake")
+	brake_key = brake_key.duplicate()
+	brake_key.pressed = false
+	Input.parse_input_event(brake_key)
+	Input.flush_buffered_events()
 	var scope_event := InputEventMouseButton.new()
 	scope_event.button_index = MOUSE_BUTTON_RIGHT
 	scope_event.pressed = true

@@ -56,7 +56,7 @@ func _ready() -> void:
 	button.pressed.connect(func(): game.set_playing(true))
 	column.add_child(button)
 	var controls := Label.new()
-	controls.text = "W A S D   Drive      MOUSE   Aim      LMB   Fire\nRMB   Scope      SPACE   Brake      WHEEL   Zoom\nESC   Pause / cursor      R   Restart range"
+	controls.text = "W A S D   Drive      MOUSE   Aim      LMB / SPACE   Fire\nRMB   Scope      SHIFT   Brake      WHEEL   Zoom\nESC   Pause / cursor      R   Restart range"
 	controls.add_theme_color_override("font_color", muted)
 	controls.add_theme_font_size_override("font_size", 15)
 	column.add_child(controls)
@@ -125,6 +125,6 @@ func _draw() -> void:
 	draw_rect(Rect2(c.x - 130, h - 91, progress * 260, 3), amber)
 	label_at(Vector2(c.x - 130, h - 106), "105 MM  /  " + ("READY" if game.cooldown <= 0 else "RELOADING  %.1f s" % game.cooldown), 15)
 	label_at(Vector2(c.x - 130, h - 62), game.message, 12, ivory)
-	label_at(Vector2(w - 302, h - 78), "RMB  SCOPE     LMB  FIRE", 13)
-	label_at(Vector2(w - 302, h - 51), "SPACE  BRAKE     ESC  PAUSE", 13, muted)
+	label_at(Vector2(w - 302, h - 78), "RMB SCOPE   LMB / SPACE FIRE", 13)
+	label_at(Vector2(w - 302, h - 51), "SHIFT  BRAKE     ESC  PAUSE", 13, muted)
 	label_at(Vector2(30, h - 10), "WHITE: CAMERA AIM     AMBER: SHELL IMPACT     /     DEVELOPMENT BUILD", 10, muted)

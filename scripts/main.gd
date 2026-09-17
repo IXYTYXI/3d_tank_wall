@@ -149,7 +149,7 @@ func _physics_process(dt: float) -> void:
 	scoped = Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT)
 	tank.throttle = float(Input.is_physical_key_pressed(KEY_W)) - float(Input.is_physical_key_pressed(KEY_S))
 	tank.steering = float(Input.is_physical_key_pressed(KEY_A)) - float(Input.is_physical_key_pressed(KEY_D))
-	tank.brake = Input.is_physical_key_pressed(KEY_SPACE)
+	tank.brake = Input.is_physical_key_pressed(KEY_SHIFT)
 	pivot.position = pivot.position.lerp(tank.position + Vector3(0, 2.8 if scoped else 3.7, 0), 1 - exp(-10 * dt))
 	pivot.rotation = Vector3(pitch, yaw, 0)
 	arm.spring_length = 0.0 if scoped else zoom
@@ -183,7 +183,7 @@ func _physics_process(dt: float) -> void:
 			muzzle_hit = pos
 	cooldown = maxf(0, cooldown - dt)
 	hit_flash = maxf(0, hit_flash - dt)
-	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and cooldown <= 0:
+	if (Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) or Input.is_physical_key_pressed(KEY_SPACE)) and cooldown <= 0:
 		fire()
 	update_shells(dt)
 	fx.drive(tank.model, tank.speed, tank.steering, dt)
