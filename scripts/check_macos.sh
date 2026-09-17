@@ -29,7 +29,7 @@ run_check standalone --quit-after 90
 # Release templates intentionally reject external script overrides. Verify their
 # compiled PCK resources with the matching editor, without using source resources.
 GODOT_BIN=${GODOT_BIN:-"$PROJECT_DIR/work/tools/Godot.app/Contents/MacOS/Godot"}
-for suite in reticle game_update aim_input modes battle_integration world_models world_collisions; do
+for suite in reticle game_update aim_input aim_compatibility modes battle_integration world_models world_collisions; do
   "$GODOT_BIN" --headless --main-pack "$APP/Contents/Resources/钢铁战场.pck" --script "$PROJECT_DIR/tests/$suite.gd" > "$LOG_DIR/exported-$suite.log" 2>&1
   if grep -E 'SCRIPT ERROR|ERROR:|FAIL |WARNING:' "$LOG_DIR/exported-$suite.log"; then
     exit 1

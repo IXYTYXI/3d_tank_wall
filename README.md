@@ -4,23 +4,21 @@
 
 ![坦克实际运行画面](docs/screenshots/tank-detail.png)
 
-## 0.4.3 准星与 Windows 卸载入口
+## 0.4.4 瞄准输入兼容与键盘备用控制
 
-主准星跟随炮口预测落点，中央小点仅表示鼠标目标方向。Windows 包内新增 Uninstall.cmd：退出游戏后双击并确认，只删除当前解压目录的游戏主文件，保留其他文件、许可和用户缓存；不扫描其他旧版本。Windows 卸载脚本尚未在 Windows 实机执行验证。
+恢复早期使用的 relative 鼠标位移通道，同时保留 screen_relative 备用和界面前输入处理；修复仅提供 relative 的事件被忽略的情况。方向键提供独立瞄准：←/→ 水平旋转，↑/↓ 调整高度，不转动车身。HUD 显示炮塔相对车身的角度。新增测试覆盖缺失 screen_relative、真实炮塔转动、WASD 与方向键同时操作、暂停与恢复。
+
+Windows 用户反馈的原始故障尚未在本机复现，不能将此次兼容修正等同于 Windows 实机确认。方向键可绕过鼠标移动输入；安装包仍保留 Uninstall.cmd。
 
 ## 主菜单更新入口
 
-主菜单右下角显示当前版本，点击“检查更新”查询本仓库已发布版本（含试玩版），按平台选择新版安装包。点击“下载新版（浏览器）”下载后退出游戏再安装。联网失败可以重试或直接打开下载页；不后台联网、不自动覆盖正在运行的游戏。0.4.1 及更早版本需手动下载一次 0.4.3，之后使用菜单检查。
-
-## 鼠标瞄准修复
-
-修复游戏界面拦截鼠标移动导致瞄准不响应的问题；鼠标瞄准改用屏幕位移，避免视口缩放改变灵敏度。暂停时不响应瞄准，恢复后重新接收输入。新增端到端输入回归检查，覆盖鼠标事件、炮塔实际转动、暂停和恢复。
+主菜单右下角显示当前版本，点击“检查更新”查询本仓库已发布版本（含试玩版），按平台选择新版安装包。点击“下载新版（浏览器）”下载后退出游戏再安装。联网失败可以重试或直接打开下载页；不后台联网、不自动覆盖正在运行的游戏。0.4.1 及更早版本需手动下载一次 0.4.4，之后使用菜单检查。
 
 ## 画质更新
 
 新增分层阴云、土路双履带车辙、湿土反光、草丛与碎石、外围树林和装甲漆面变化。草石按空间分块批量绘制，限制显示距离，不参与碰撞。
 
-在本机双击 `launch-cinematic.command` 可启动可选的 Forward+ 画质样板：环境遮蔽、体积雾、辉光与 ACES 色调映射。原来的 `launch.command` 仍使用兼容渲染器。Forward+ 已在 Apple M4 / Metal 上运行；其他 GPU 尚未实测。0.4.3 两端下载包均包含这些更新，默认兼容模式；Mac 包附高画质启动.command，Windows 包附 HighQuality.cmd。
+在本机双击 `launch-cinematic.command` 可启动可选的 Forward+ 画质样板：环境遮蔽、体积雾、辉光与 ACES 色调映射。原来的 `launch.command` 仍使用兼容渲染器。Forward+ 已在 Apple M4 / Metal 上运行；其他 GPU 尚未实测。0.4.4 两端下载包均包含这些更新，默认兼容模式；Mac 包附高画质启动.command，Windows 包附 HighQuality.cmd。
 
 复现实际截图与性能采样：
 
@@ -32,7 +30,7 @@
 
 ## Windows 免安装版
 
-[下载 0.4.3 Windows 64 位 ZIP](https://github.com/IXYTYXI/3d_tank_wall/releases/download/v0.4.3-preview/SteelFront-0.4.3-Windows-x64.zip) · [版本说明与 SHA-256](https://github.com/IXYTYXI/3d_tank_wall/releases/tag/v0.4.3-preview)
+[下载 0.4.4 Windows 64 位 ZIP](https://github.com/IXYTYXI/3d_tank_wall/releases/download/v0.4.4-preview/SteelFront-0.4.4-Windows-x64.zip) · [版本说明与 SHA-256](https://github.com/IXYTYXI/3d_tank_wall/releases/tag/v0.4.4-preview)
 
 完整解压后双击 `SteelFront.exe`，同目录保留 `SteelFront.pck`，无需安装 Godot。目标为 Windows 10/11、Intel / AMD 64 位电脑和支持 OpenGL 3.3 的显卡。包含基地防守、无尽生存、限时歼灭、自由训练及新版模型。
 
@@ -40,7 +38,7 @@
 
 ## macOS 安装包
 
-[下载 0.4.3 macOS 通用 DMG](https://github.com/IXYTYXI/3d_tank_wall/releases/download/v0.4.3-preview/SteelFront-0.4.3-macOS-universal.dmg) · [版本说明与 SHA-256](https://github.com/IXYTYXI/3d_tank_wall/releases/tag/v0.4.3-preview)
+[下载 0.4.4 macOS 通用 DMG](https://github.com/IXYTYXI/3d_tank_wall/releases/download/v0.4.4-preview/SteelFront-0.4.4-macOS-universal.dmg) · [版本说明与 SHA-256](https://github.com/IXYTYXI/3d_tank_wall/releases/tag/v0.4.4-preview)
 
 打开 DMG，将“钢铁战场.app”拖入 Applications，即可独立运行，无需安装 Godot。Universal 2 包含 Apple Silicon 和 Intel；本机 Apple M4 已验证，Intel 尚未实机验证。
 
@@ -64,7 +62,7 @@
 |---|---|
 | W / S | 前进 / 倒车 |
 | A / D | 车体左转 / 右转，允许原地转向 |
-| 鼠标移动 | 旋转观察方向，炮塔按限速追踪 |
+| 鼠标移动 / ← → ↑ ↓ | 调整瞄准方向，炮塔按限速追踪，车身独立 |
 | 鼠标左键 / 空格（可按住） | 发射，装填时间 2.3 秒 |
 | 鼠标右键（按住） | 开镜瞄准，降低鼠标灵敏度 |
 | 滚轮 | 调整第三人称镜头距离 |
@@ -73,7 +71,7 @@
 | E | 基地防守中应急维修，每局 2 次 |
 | R | 重建战场，回到主菜单 |
 
-白色十字表示相机瞄准目标，黄色圆圈表示当前炮口弹道的预测落点；炮塔转动、俯仰限位和重力会使它们不同。炮管被掩体挡住时会提示 **炮口被掩体遮挡**。靶标需要两发摧毁，清除 6 个靶标后显示完成提示。
+中央小点表示目标方向，白色十字与黄色圆圈表示炮口弹道的预测落点；炮塔转动、俯仰限位和重力会使它们不同。炮管被掩体挡住时会提示 **炮口被掩体遮挡**。靶标需要两发摧毁，清除 6 个靶标后显示完成提示。
 
 ## 基地防守
 
@@ -95,7 +93,7 @@
 - **限时歼灭**：没有基地，5 秒准备后，在 180 秒内击毁 12 辆敌军。没有波间强化，暂停冻结任务时限；超时或玩家被毁即失败。
 - **自由训练**：保留六个静止靶标，可自由驾驶和练习弹道。
 
-## 0.4.3 战场模型
+## 0.4.4 战场模型
 
 - 针叶树：分段树干、放射分枝、细碎针叶，六种基础外形与随机缩放旋转。
 - 障碍：不规则岩体、斜面混凝土路障、磨损警示条、带底座和吊环的龙牙反坦克锥、三根工字钢构成的螺栓拒马。
@@ -149,7 +147,7 @@
 
 截图写入被忽略的 `outputs/`。这会短暂打开测试窗口；用于截图的近景相机属于测试工具，正常驾驶镜头仍为第三人称。
 
-已在本机 Apple M4 / macOS 上运行与截图验证。macOS 独立安装包为 0.4.3 试玩版，采用 ad-hoc 签名，未公证。Windows 已交叉导出并检查资源，尚未实机验证；Linux 的导出和实机验证尚未进行；Android 和 iOS 后续再适配。
+已在本机 Apple M4 / macOS 上运行与截图验证。macOS 独立安装包为 0.4.4 试玩版，采用 ad-hoc 签名，未公证。Windows 已交叉导出并检查资源，尚未实机验证；Linux 的导出和实机验证尚未进行；Android 和 iOS 后续再适配。
 
 ## 构建 macOS 安装包
 

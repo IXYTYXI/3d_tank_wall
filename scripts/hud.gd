@@ -103,7 +103,7 @@ func _ready() -> void:
 		upgrades.add_child(upgrade)
 	upgrades.hide()
 	controls = Label.new()
-	controls.text = "W A S D 驾驶    鼠标 瞄准\n左键 / 空格 开火    右键 开镜    Shift 制动\n滚轮 调整镜头    E 应急维修（战斗中）\nEsc 暂停    R 返回主菜单"
+	controls.text = "W A S D 驾驶    鼠标 / 方向键 瞄准\n← → 转炮塔    ↑ ↓ 抬高 / 压低瞄准\n左键 / 空格 开火    右键 开镜    Shift 制动\n滚轮 调整镜头    E 应急维修（战斗中）\nEsc 暂停    R 返回主菜单"
 	controls.add_theme_color_override("font_color", muted)
 	controls.add_theme_font_size_override("font_size", 15)
 	column.add_child(controls)
@@ -242,7 +242,8 @@ func _draw() -> void:
 	if game.blocked:
 		label_at(c + Vector2(-78, 64), "炮口被掩体遮挡", 13, Color("f39973"))
 	draw_rect(Rect2(28, h - 124, 270, 96), Color(0.03, 0.07, 0.08, 0.80))
-	label_at(Vector2(46, h - 91), "M-01 / 中型坦克", 13, muted)
+	var turret_angle := wrapf(game.tank.model.turret.rotation_degrees.y, -180, 180)
+	label_at(Vector2(46, h - 91), "M-01 / 炮塔 %s %03d°" % ["左" if turret_angle>=0 else "右", roundi(absf(turret_angle))], 13, muted)
 	label_at(Vector2(46, h - 48), "%02d" % int(absf(game.tank.speed) * 3.6), 36)
 	label_at(Vector2(107, h - 49), "公里/时", 13, muted)
 	label_at(Vector2(208, h - 49), "倒车" if game.tank.speed < -0.1 else "前进", 16, amber)
@@ -253,7 +254,7 @@ func _draw() -> void:
 	label_at(Vector2(c.x - 130, h - 106), "105 毫米 / " + ("装填就绪" if game.cooldown <= 0 else "装填中 %.1f 秒" % game.cooldown), 15)
 	label_at(Vector2(c.x - 130, h - 62), game.message, 12, ivory)
 	label_at(Vector2(w - 302, h - 78), "右键 开镜   左键 / 空格 开火", 13)
-	label_at(Vector2(w - 302, h - 51), "Shift 制动     Esc 暂停", 13, muted)
+	label_at(Vector2(w - 302, h - 51), "方向键 瞄准   Shift 制动   Esc 暂停", 13, muted)
 	label_at(Vector2(30, h - 10), "主准星：炮口预测落点    中央小点：鼠标目标    /    开发版本", 12, muted)
 
 func gun_reticle_position() -> Vector2:

@@ -144,11 +144,15 @@ func _notification(what: int) -> void:
 
 func _input(event: InputEvent) -> void:
 	# Captured gameplay look must run before GUI controls consume mouse motion.
-	# Screen-relative displacement is unaffected by viewport stretch / display DPI.
 	if playing and event is InputEventMouseMotion:
+		# Keep the original relative-motion channel: some event producers leave
+		# screen_relative empty. Undo viewport stretch to retain screen-pixel speed.
+		var delta := get_viewport().get_final_transform().basis_xform(event.relative)
+		if delta.is_zero_approx():
+			delta = event.screen_relative
 		var sensitivity := 0.0010 if scoped else 0.0025
-		yaw -= event.screen_relative.x * sensitivity
-		pitch = clampf(pitch - event.screen_relative.y * sensitivity, -0.65, 0.3)
+		yaw -= delta.x * sensitivity
+		pitch = clampf(pitch - delta.y * sensitivity, -0.65, 0.3)
 		get_viewport().set_input_as_handled()
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -177,6 +181,11 @@ func _physics_process(dt: float) -> void:
 		pivot.rotation = Vector3(pitch, yaw, 0)
 		return
 	scoped = Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT)
+	# An independent keyboard path keeps the gun usable without mouse motion.
+	var aim_horizontal := float(Input.is_physical_key_pressed(KEY_LEFT)) - float(Input.is_physical_key_pressed(KEY_RIGHT))
+	var aim_vertical := float(Input.is_physical_key_pressed(KEY_UP)) - float(Input.is_physical_key_pressed(KEY_DOWN))
+	yaw += aim_horizontal * (0.4 if scoped else 1.2) * dt
+	pitch = clampf(pitch + aim_vertical * (0.25 if scoped else 0.6) * dt, -0.65, 0.3)
 	tank.throttle = float(Input.is_physical_key_pressed(KEY_W)) - float(Input.is_physical_key_pressed(KEY_S))
 	tank.steering = float(Input.is_physical_key_pressed(KEY_A)) - float(Input.is_physical_key_pressed(KEY_D))
 	tank.brake = Input.is_physical_key_pressed(KEY_SHIFT)
