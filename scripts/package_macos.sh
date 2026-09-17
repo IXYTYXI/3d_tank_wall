@@ -19,6 +19,7 @@ if grep -E 'SCRIPT ERROR|ERROR:|Export failed' work/package/import.log work/pack
 fi
 codesign --verify --deep --strict "$STAGING/钢铁战场.app"
 ln -s /Applications "$STAGING/Applications"
+cp scripts/macos_high_quality.command "$STAGING/高画质启动.command"
 cp docs/mac-install.txt "$STAGING/安装与玩法说明.txt"
 mkdir "$STAGING/Licenses"
 cp docs/licenses/Godot-LICENSE.txt docs/licenses/Godot-COPYRIGHT.txt "$STAGING/Licenses/"

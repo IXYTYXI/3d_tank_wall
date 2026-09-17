@@ -1,9 +1,12 @@
-钢铁战场 0.3.0 — Windows 64 位试玩版
+钢铁战场 0.4.0 — Windows 64 位试玩版
 
 安装与启动
 1. 将 ZIP 完整解压到一个文件夹。
 2. 双击 SteelFront.exe，无需安装 Godot。
 3. SteelFront.exe 和 SteelFront.pck 必须留在同一文件夹，不要直接从压缩包运行。
+
+高画质模式
+完整解压后双击 HighQuality.cmd，开启环境遮蔽、体积雾和辉光。需要支持 Vulkan 的现代显卡与驱动；若不能启动，请使用 SteelFront.exe 兼容模式。
 
 本包未做代码签名，Windows 可能显示未知发布者提示。请核对本项目 GitHub Release 来源及 SHA-256，不要关闭系统安全保护。
 

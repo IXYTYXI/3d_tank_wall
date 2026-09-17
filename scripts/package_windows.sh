@@ -14,6 +14,7 @@ trap 'rm -rf "$STAGING"' EXIT HUP INT TERM
 if grep -E 'SCRIPT ERROR|ERROR:|Export failed|WARNING:' work/package/windows-import.log work/package/windows-export.log; then
   exit 1
 fi
+cp scripts/windows_high_quality.cmd "$STAGING/HighQuality.cmd"
 cp docs/windows-install.txt "$STAGING/安装与玩法说明.txt"
 mkdir "$STAGING/Licenses"
 cp docs/licenses/Godot-LICENSE.txt docs/licenses/Godot-COPYRIGHT.txt "$STAGING/Licenses/"

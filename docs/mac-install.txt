@@ -1,9 +1,13 @@
-钢铁战场 0.3.0 — macOS 试玩版
+钢铁战场 0.4.0 — macOS 试玩版
 
 安装
-1. 打开 SteelFront-0.3.0-macOS-universal.dmg。
+1. 打开 SteelFront-0.4.0-macOS-universal.dmg。
 2. 将“钢铁战场.app”拖到“Applications（应用程序）”。
 3. 从“应用程序”中打开“钢铁战场”。不需要另外安装 Godot。
+
+高画质模式
+双击 DMG 内的“高画质启动.command”，会启动同一 DMG 中的游戏。安装后也可将该脚本复制到任意位置，它会查找 /Applications/钢铁战场.app。
+高画质模式增加环境遮蔽、体积雾与辉光，需要兼容的现代 GPU。普通启动仍是兼容模式，包含新的天空、地表和草石。
 
 首次运行
 这是独立开发的试玩版本，使用 ad-hoc 签名，尚无 Apple Developer ID 签名和 Apple 公证。

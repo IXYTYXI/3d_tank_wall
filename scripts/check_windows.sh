@@ -12,8 +12,8 @@ import pathlib, struct, sys, zipfile
 with zipfile.ZipFile(sys.argv[1]) as z:
     assert z.testzip() is None, 'ZIP CRC failure'
     names = z.namelist()
-    assert len(names) == 6, names
-    for required in ('SteelFront.exe','SteelFront.pck','安装与玩法说明.txt','Licenses/Godot-LICENSE.txt','Licenses/Godot-COPYRIGHT.txt','Licenses/NotoSansSC-OFL.txt'):
+    assert len(names) == 7, names
+    for required in ('SteelFront.exe','SteelFront.pck','HighQuality.cmd','安装与玩法说明.txt','Licenses/Godot-LICENSE.txt','Licenses/Godot-COPYRIGHT.txt','Licenses/NotoSansSC-OFL.txt'):
         assert any(n.endswith('/'+required) for n in names), required
     exe = z.read(next(n for n in names if n.endswith('/SteelFront.exe')))
     assert exe[:2] == b'MZ'
