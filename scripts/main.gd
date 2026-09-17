@@ -4,6 +4,7 @@ const Field = preload("res://scripts/battlefield.gd")
 const Tank = preload("res://scripts/tank.gd")
 const Visual = preload("res://scripts/tank_visual.gd")
 const Combat = preload("res://scripts/combat_math.gd")
+const Effects = preload("res://scripts/battle_effects.gd")
 const Hud = preload("res://scripts/hud.gd")
 var field: Node3D
 var tank: CharacterBody3D
@@ -20,7 +21,8 @@ var zoom := 10.5
 var cooldown := 0.0
 var reload_time := 2.3
 var shells: Array[Dictionary] = []
-var effects: Array[Dictionary] = []
+var fx: Node3D
+var shot_kick := 0.0
 var aim_point := Vector3.ZERO
 var muzzle_hit := Vector3.ZERO
 var blocked := false
@@ -33,6 +35,8 @@ var audio: AudioStreamPlayer
 
 func _ready() -> void:
 	setup_environment()
+	fx = Effects.new()
+	add_child(fx)
 	field = Field.new()
 	add_child(field)
 	tank = Tank.new()
@@ -71,29 +75,34 @@ func setup_environment() -> void:
 	env.background_mode = Environment.BG_SKY
 	var sky := Sky.new()
 	var sky_mat := ProceduralSkyMaterial.new()
-	sky_mat.sky_top_color = Color("607d91")
-	sky_mat.sky_horizon_color = Color("c6c9b8")
+	sky_mat.sky_top_color = Color("263d50")
+	sky_mat.sky_horizon_color = Color("8a9c9d")
 	sky_mat.ground_bottom_color = Color("464b3b")
 	sky_mat.ground_horizon_color = Color("b7bda9")
 	sky.sky_material = sky_mat
 	env.sky = sky
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color("a6b9c8")
-	env.ambient_light_energy = 0.25
+	env.ambient_light_color = Color("859fad")
+	env.ambient_light_energy = 0.65
 	env.tonemap_mode = Environment.TONE_MAPPER_LINEAR
 	env.fog_enabled = true
-	env.fog_light_color = Color("b2beae")
-	env.fog_density = 0.0012
+	env.fog_light_color = Color("798e94")
+	env.fog_density = 0.0018
 	env.fog_sky_affect = 0.2
 	world.environment = env
 	add_child(world)
 	var sun := DirectionalLight3D.new()
-	sun.light_color = Color("fff0d9")
-	sun.light_energy = 0.7
-	sun.rotation_degrees = Vector3(-32, -36, 0)
+	sun.light_color = Color("ffe1a6")
+	sun.light_energy = 1.0
+	sun.rotation_degrees = Vector3(-29, 138, 0)
 	sun.shadow_enabled = true
 	sun.directional_shadow_max_distance = 150
 	add_child(sun)
+	var fill := DirectionalLight3D.new()
+	fill.light_color = Color("8aaac4")
+	fill.light_energy = 0.32
+	fill.rotation_degrees = Vector3(-45, -42, 0)
+	add_child(fill)
 
 func set_playing(value: bool) -> void:
 	playing = value
@@ -144,6 +153,8 @@ func _physics_process(dt: float) -> void:
 	pivot.position = pivot.position.lerp(tank.position + Vector3(0, 2.8 if scoped else 3.7, 0), 1 - exp(-10 * dt))
 	pivot.rotation = Vector3(pitch, yaw, 0)
 	arm.spring_length = 0.0 if scoped else zoom
+	shot_kick *= exp(-12 * dt)
+	camera.rotation.x = shot_kick
 	camera.fov = lerpf(camera.fov, 29 if scoped else 65, 1 - exp(-12 * dt))
 	tank.model.visible = not scoped
 	var center := get_viewport().get_visible_rect().size * 0.5
@@ -175,7 +186,8 @@ func _physics_process(dt: float) -> void:
 	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and cooldown <= 0:
 		fire()
 	update_shells(dt)
-	update_effects(dt)
+	fx.drive(tank.model, tank.speed, tank.steering, dt)
+	fx.tick(dt)
 	hud.queue_redraw()
 
 func fire() -> void:
@@ -187,7 +199,9 @@ func fire() -> void:
 	var direction: Vector3 = -tank.model.muzzle.global_basis.z
 	var obstruction := ray(tank.model.barrel.global_position, muzzle)
 	play_boom()
-	burst(muzzle, Color("ffd17a"), 0.18, 0.85)
+	fx.fire(muzzle, direction)
+	tank.model.kick_recoil()
+	shot_kick = 0.014 if scoped else 0.025
 	if not obstruction.is_empty():
 		impact(obstruction)
 		return
@@ -213,7 +227,7 @@ func update_shells(dt: float) -> void:
 			shell.node.look_at(next.position + next.velocity)
 
 func impact(contact: Dictionary) -> void:
-	burst(contact.position, Color("d6bc87"), 0.65, 1.6)
+	fx.impact(contact.position, contact.get("normal", Vector3.UP))
 	var body: Object = contact.collider
 	if body.has_meta("target"):
 		hits += 1
@@ -224,39 +238,10 @@ func impact(contact: Dictionary) -> void:
 		if hp <= 0:
 			destroyed += 1
 			message = "TARGET %02d / DESTROYED" % body.get_meta("index")
-			burst(contact.position, Color("e59b4d"), 1.2, 3.0)
+			fx.impact(contact.position, Vector3.UP, true)
 			body.queue_free()
 			if destroyed == 6:
 				message = "RANGE CLEAR / PRESS R TO RESTART"
-
-func burst(pos: Vector3, color: Color, life: float, size: float) -> void:
-	var mesh := MeshInstance3D.new()
-	var sphere := SphereMesh.new()
-	sphere.radius = size * 0.2
-	sphere.height = size * 0.4
-	sphere.radial_segments = 12
-	sphere.rings = 6
-	mesh.mesh = sphere
-	var mat := Visual.material(color)
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mesh.material_override = mat
-	add_child(mesh)
-	mesh.position = pos
-	effects.append({"node": mesh, "life": life, "max": life, "size": size})
-
-func update_effects(dt: float) -> void:
-	for i in range(effects.size() - 1, -1, -1):
-		var effect := effects[i]
-		effect.life -= dt
-		if effect.life <= 0:
-			effect.node.queue_free()
-			effects.remove_at(i)
-		else:
-			var ratio: float = effect.life / effect.max
-			effect.node.scale = Vector3.ONE * (1 + (1 - ratio) * 3)
-			effect.node.position.y += dt * 1.4
-			effect.node.material_override.albedo_color.a = ratio
 
 func play_boom() -> void:
 	if DisplayServer.get_name() == "headless":

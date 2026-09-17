@@ -19,5 +19,6 @@ run_check() {
 }
 run_check import --editor --import
 run_check combat --script tests/run.gd
+run_check presentation --script tests/presentation.gd
 run_check integration --script tests/integration.gd
 run_check startup --quit-after 90

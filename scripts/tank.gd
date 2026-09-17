@@ -29,7 +29,8 @@ func _physics_process(dt: float) -> void:
 	speed = move_toward(speed, target_speed, (18.0 if brake else 4.0 if throttle else 5.0) * dt)
 	if brake:
 		speed = move_toward(speed, 0, 18 * dt)
-	rotate_y(steering * dt * (0.65 + minf(absf(speed) / 13.5, 1.0) * 0.2))
+	var turn_rate := steering * (0.65 + minf(absf(speed) / 13.5, 1.0) * 0.2)
+	rotate_y(turn_rate * dt)
 	var forward := -global_basis.z
 	velocity.x = forward.x * speed
 	velocity.z = forward.z * speed
@@ -41,7 +42,7 @@ func _physics_process(dt: float) -> void:
 		var normal := global_basis.inverse() * get_floor_normal()
 		var desired := Basis.looking_at(Vector3.FORWARD.slide(normal).normalized(), normal)
 		model.basis = model.basis.slerp(desired, minf(dt * 6, 1)).orthonormalized()
-	model.animate(speed, dt)
+	model.animate(speed, dt, turn_rate)
 	var local_target: Vector3 = model.to_local(aim_point) - model.turret.position
 	var yaw := atan2(-local_target.x, -local_target.z)
 	model.turret.rotation.y = rotate_toward(model.turret.rotation.y, yaw, dt * 0.9)

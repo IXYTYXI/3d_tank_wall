@@ -109,8 +109,8 @@ func build_terrain() -> void:
 	var mesh := st.commit()
 	var visual := MeshInstance3D.new()
 	visual.mesh = mesh
-	var mat := Visual.material(Color.WHITE)
-	mat.vertex_color_use_as_albedo = true
+	var mat := ShaderMaterial.new()
+	mat.shader = preload("res://shaders/ground.gdshader")
 	visual.material_override = mat
 	add_child(visual)
 	terrain = StaticBody3D.new()
