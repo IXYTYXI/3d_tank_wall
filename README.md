@@ -4,6 +4,14 @@
 
 ![坦克实际运行画面](docs/screenshots/tank-detail.png)
 
+## Windows 免安装版
+
+[下载 0.3.0 Windows 64 位 ZIP](https://github.com/IXYTYXI/3d_tank_wall/releases/download/v0.3.0-windows-preview/SteelFront-0.3.0-Windows-x64.zip) · [版本说明与 SHA-256](https://github.com/IXYTYXI/3d_tank_wall/releases/tag/v0.3.0-windows-preview)
+
+完整解压后双击 `SteelFront.exe`，同目录保留 `SteelFront.pck`，无需安装 Godot。目标为 Windows 10/11、Intel / AMD 64 位电脑和支持 OpenGL 3.3 的显卡。包含基地防守、无尽生存、限时歼灭、自由训练及新版模型。
+
+本包未做代码签名。已完成交叉导出、PE 架构检查、ZIP 完整性和导出资源回归检查；**尚未在 Windows 实机验证启动、画面和输入**。
+
 ## macOS 安装包
 
 [下载 0.3.0 macOS 通用 DMG](https://github.com/IXYTYXI/3d_tank_wall/releases/download/v0.3.0-macos-preview/SteelFront-0.3.0-macOS-universal.dmg) · [版本说明与 SHA-256](https://github.com/IXYTYXI/3d_tank_wall/releases/tag/v0.3.0-macos-preview)
@@ -115,7 +123,7 @@
 
 截图写入被忽略的 `outputs/`。这会短暂打开测试窗口；用于截图的近景相机属于测试工具，正常驾驶镜头仍为第三人称。
 
-已在本机 Apple M4 / macOS 上运行与截图验证。macOS 独立安装包为 0.3.0 试玩版，采用 ad-hoc 签名，未公证。Windows、Linux 的导出和实机验证尚未进行；Android 和 iOS 后续再适配。
+已在本机 Apple M4 / macOS 上运行与截图验证。macOS 独立安装包为 0.3.0 试玩版，采用 ad-hoc 签名，未公证。Windows 已交叉导出并检查资源，尚未实机验证；Linux 的导出和实机验证尚未进行；Android 和 iOS 后续再适配。
 
 ## 构建 macOS 安装包
 
@@ -128,6 +136,17 @@
 ```
 
 安装包和 SHA-256 文件输出到 `outputs/macos/`。导出预设包含游戏脚本、场景和资源，排除开发工具和测试。Godot 与中文字体第三方许可证随 DMG 分发。
+
+## 构建 Windows 免安装包
+
+将同版官方标准导出模板的 `templates/windows_release_x86_64.exe` 和 `templates/windows_debug_x86_64.exe` 放到 `work/export-templates/`，执行：
+
+```sh
+./scripts/package_windows.sh
+./scripts/check_windows.sh
+```
+
+ZIP 和 SHA-256 输出到 `outputs/windows/`。检查脚本验证 PE32+ x86_64、完整性、许可文件，并用匹配版本编辑器检查打包的 PCK；它不替代 Windows 实机测试。
 
 ## 文件结构
 
